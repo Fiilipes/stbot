@@ -18,6 +18,8 @@ const clientId = process.env.CLIENT_ID;
 const guildId = process.env.GUILD_ID;
 
 import client from './assets/settings/discordjssetup.js';
+import createCategory from "./assets/slashCommands/SC__CreateCategory/setup.js";
+import competitions from "./assets/slashCommands/SC__Competetions/setup.js";
 
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
@@ -40,6 +42,14 @@ client.on(Events.InteractionCreate, async interaction => {
             await sendMsg.execute(interaction);
             break;
         }
+        case createCategory.name: {
+            await createCategory.execute(interaction);
+            break;
+        }
+        case competitions.name: {
+            await competitions.execute(interaction);
+            break;
+        }
         default: {
             await interaction.reply({content: "Unknown command", ephemeral: true});
         }
@@ -55,7 +65,9 @@ new REST({version: '10'}).setToken(token).put(
 
             [
                 help.slashCommand,
-                sendMsg.slashCommand
+                sendMsg.slashCommand,
+                createCategory.slashCommand,
+                competitions.slashCommand
             ]
     }
 );

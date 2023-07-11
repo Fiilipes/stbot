@@ -1,16 +1,33 @@
-import {createEmbeds} from "./functions.js";
 import links from "./links.js";
 import images from "./images.js";
 import client from "./discordjssetup.js";
+import websites from "./websites.js";
+import {hyperlink} from "discord.js";
+import functions from "./functions.js";
 
 const answers = {
     "errorOccurred": async (error, place) => {
+        console.log(place)
         return {
-            "embeds": await createEmbeds(
+            "embeds": await functions.createEmbeds(
                 {
-                    color: 0xFF9900,
+                    color: 0xE0C606,
                     title: 'Nastala chyba',
-                    description: `Nastala chyba v místě ${place}`,
+                    description: error,
+                    thumbnail: images.thinking,
+                    fields: [
+                        {
+                            name: 'Místo chyby:',
+                            value: hyperlink("**Github.com**" + place.split("/assets")[1],websites.githubRepository + place, "Github")
+                        }
+                    ],
+                    timestamp: new Date(),
+                    footer: {
+                        text: client.user.username,
+                        iconURL: client.user.avatarURL(),
+                    }
+
+
                 },
             ),
             "ephemeral": true
@@ -22,7 +39,7 @@ const answers = {
     },
     "messageSentInChannel": async (channel, message) => {
         return {
-            "embeds": await createEmbeds(
+            "embeds": await functions.createEmbeds(
                 {
                     color: 0x0099FF,
                     title: 'Zpráva byla odeslána',
@@ -46,9 +63,8 @@ const answers = {
         }
     },
     "messageSentToUser": async  (user, message) => {
-        console.log(message)
         return {
-            "embeds": await createEmbeds(
+            "embeds": await functions.createEmbeds(
                 {
                     color: 0x0099FF,
                     title: 'Zpráva byla odeslána',
