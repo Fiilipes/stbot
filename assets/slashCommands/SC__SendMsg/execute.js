@@ -5,8 +5,9 @@ import answers from "../../settings/answers.js";
 const execute = async (interaction) => {
 
     try {
-        const subcommand = interaction.options.getSubcommand();
 
+
+        const subcommand = interaction.options.getSubcommand() ? interaction.options.getSubcommand() : undefined;
         const user = interaction.options.getUser('user') ? interaction.options.getUser('user') : undefined;
         const channel = interaction.options.getChannel('channel') ? interaction.options.getChannel('channel') : undefined;
         const message = interaction.options.getString('message') ? interaction.options.getString('message') : undefined;
@@ -27,13 +28,25 @@ const execute = async (interaction) => {
                                 async (answer) => {
                                     await interaction.reply(answer)
                                 }
+                            ).catch(
+                                async (error) => {
+                                    await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
+                                }
                             )
+                        }
+                    ).catch(
+                        async (error) => {
+                            await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
                         }
                     )
                 } else {
-                    answers.errorOccurred("Channel is undefined.", functions.getCurrentFilePath()).then(
+                    answers.alert("Channel is undefined.").then(
                         async (answer) => {
                             await interaction.reply(answer)
+                        }
+                    ).catch(
+                        async (error) => {
+                            await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
                         }
                     )
                 }
@@ -54,33 +67,49 @@ const execute = async (interaction) => {
                                     async (answer) => {
                                         await interaction.reply(answer)
                                     }
+                                ).catch(
+                                    async (error) => {
+                                        await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
+                                    }
                                 )
+                            }
+                        ).catch(
+                            async (error) => {
+                                await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
                             }
                         )
                     } else {
-                        answers.errorOccurred("You cannot send messages to bots.", functions.getCurrentFilePath()).then(
+                        answers.alert("You cannot send messages to bots.").then(
                             async (answer) => {
                                 await interaction.reply(answer)
+                            }
+                        ).catch(
+                            async (error) => {
+                                await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
                             }
                         )
                     }
                 } else {
-                    answers.errorOccurred("User is undefined.", functions.getCurrentFilePath()).then(
+                    answers.alert("User is undefined.").then(
                         async (answer) => {
                             await interaction.reply(answer)
+                        }
+                    ).catch(
+                        async (error) => {
+                            await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
                         }
                     )
                 }
         }
 
-
-
-
-
     } catch (error) {
         answers.errorOccurred(error, functions.getCurrentFilePath()).then(
             async (answer) => {
                 await interaction.reply(answer)
+            }
+        ).catch(
+            async (error) => {
+                await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
             }
         )
     }
