@@ -4,9 +4,21 @@ import client from "./discordjssetup.js";
 dotenv.config();
 
 import {
-    EmbedBuilder, ChannelType, PermissionFlagsBits, Colors, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle
+    EmbedBuilder,
+    ChannelType,
+    PermissionFlagsBits,
+    Colors,
+    ModalBuilder,
+    ActionRowBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    UserSelectMenuBuilder, RoleSelectMenuBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, Events
 } from "discord.js";
 import answers from "./answers.js";
+import help from "../slashCommands/SC__Help/setup.js";
+import sendMsg from "../slashCommands/SC__SendMsg/setup.js";
+import createCategory from "../slashCommands/SC__CreateCategory/setup.js";
+import automod from "../slashCommands/SC__Automod/setup.js";
 
 const guildId = process.env.GUILD_ID;
 
@@ -65,6 +77,75 @@ class Functions {
         )
 
         return modal
+    }
+
+    async createSelectMenus(components) {
+        const myActionRows = []
+
+        components.forEach(component => {
+
+            switch (component.type) {
+                case "user":
+                    myActionRows.push(
+                        new ActionRowBuilder().addComponents(
+                            new UserSelectMenuBuilder()
+                                .setCustomId(component.customId ? component.customId : "error-users")
+                                .setPlaceholder(component.placeholder ? component.placeholder : "Error placeholder")
+                                .setMinValues(component.minValues ? component.minValues : 0)
+                                .setMaxValues(component.maxValues ? component.maxValues : 10)
+                        )
+                    )
+                    break;
+                case "role":
+                    myActionRows.push(
+                        new ActionRowBuilder().addComponents(
+                            new RoleSelectMenuBuilder()
+                                .setCustomId(component.customId ? component.customId : "error-roles")
+                                .setPlaceholder(component.placeholder ? component.placeholder : "Error placeholder")
+                                .setMinValues(component.minValues ? component.minValues : 0)
+                                .setMaxValues(component.maxValues ? component.maxValues : 10)
+                        )
+                    )
+
+                    break;
+                case "normal":
+
+                    const select = new StringSelectMenuBuilder()
+                        .setCustomId(component.customId ? component.customId : "error-normal")
+                        .setPlaceholder(component.placeholder ? component.placeholder : "Error placeholder")
+
+                    component.options.forEach(option => {
+
+                        if (option.emoji) {
+                            select.addOptions(
+                                new StringSelectMenuOptionBuilder()
+                                    .setLabel(option.label ? option.label : "Error label")
+                                    .setDescription(option.description ? option.description : "Error description")
+                                    .setEmoji(option.emoji ? option.emoji : "❌")
+                                    .setDefault(option.default ? option.default : false)
+                                    .setValue(option.value ? option.value : "Error value")
+                            )
+                        } else {
+                            select.addOptions(
+                                new StringSelectMenuOptionBuilder()
+                                    .setLabel(option.label ? option.label : "Error label")
+                                    .setDescription(option.description ? option.description : "Error description")
+                                    .setDefault(option.default ? option.default : false)
+                                    .setValue(option.value ? option.value : "Error value")
+                            )
+                        }
+                    })
+
+                    myActionRows.push(
+                        new ActionRowBuilder().addComponents(select)
+                    )
+                    break;
+                default:
+                    console.log("error")
+            }
+        })
+
+        return myActionRows
     }
 
     async sendMessageToChannel(channel, message = null, embeds = null, components = null, files = null) {
@@ -126,6 +207,36 @@ class Functions {
             }
         )
     }
+
+    async mainInteractionListener(interaction) {
+        if (!interaction.isCommand()) return;
+
+        const { commandName } = interaction;
+
+        switch (commandName) {
+            case help.name: {
+                await help.execute(interaction);
+                break;
+            }
+            case sendMsg.name: {
+                await sendMsg.execute(interaction);
+                break;
+            }
+            case createCategory.name: {
+                await createCategory.execute(interaction);
+                break;
+            }
+            case automod.name: {
+                await automod.execute(interaction);
+                break;
+            }
+            default: {
+                await interaction.reply({content: "Unknown command", ephemeral: true});
+            }
+        }
+    }
+
+
 }
 
 const functions = new Functions();
