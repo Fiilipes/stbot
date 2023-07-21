@@ -152,7 +152,7 @@ const execute = async (interaction) => {
 
                 const rule4 = await guild.autoModerationRules.create({
                     name: "Prevent spam mentions by Soutěže tryhard bot",
-                    creatorId: "1130814174889508954",
+                    creatorId: "1131016160045977640",
                     enabled: true,
                     eventType: 1,
                     triggerType: 5,

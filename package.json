@@ -1,15 +1,16 @@
 {
-  "name": "soutezetryhardbot2",
+  "name": "mycoolbot",
   "version": "1.0.0",
   "description": "",
+  "main": "./index.js",
   "type": "module",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Filipes",
   "license": "ISC",
   "dependencies": {
+    "discloud": "^1.5.1",
     "discord.js": "^14.11.0",
     "dotenv": "^16.3.1",
     "firebase": "^10.0.0"

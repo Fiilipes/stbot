@@ -11,7 +11,16 @@ const client = new Client(
                 GatewayIntentBits.GuildMessageReactions,
                 GatewayIntentBits.GuildMessageTyping,
                 GatewayIntentBits.MessageContent,
-                GatewayIntentBits.GuildVoiceStates
+                GatewayIntentBits.GuildVoiceStates,
+// join and leave server
+            GatewayIntentBits.GuildMembers,
+            GatewayIntentBits.GuildPresences,
+            GatewayIntentBits.GuildBans,
+            GatewayIntentBits.GuildInvites,
+            GatewayIntentBits.GuildEmojisAndStickers,
+            GatewayIntentBits.GuildIntegrations,
+            GatewayIntentBits.GuildWebhooks,
+            GatewayIntentBits.GuildMessageReactions,
 
             ],
         partials:

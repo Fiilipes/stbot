@@ -121,6 +121,14 @@ const answers = {
         } catch (error) {
             return errorAnswers.errorOccurred(error, functions.getCurrentFilePath())
         }
+    },
+    "welcomeMessage": async (member) => {
+        return `# Vítej na **Soutěže Tryhard**, ${member} !\n` +
+            `Je mým potěšením tě zde přivítat mezi námi. Aby ses ovšem dostal do kontaktu s ostatníma, je nutné vyčkat než Vás náš A-team verifikuje. Mezi tím si však můžete detailně přečíst pravidla nebo odpovědět na pár uvítacích otázek :) \n` +
+            "\n" +
+            "Děkuji za pochopení\n" +
+            "Soutěže Tryhard Bot"
+
     }
 }
 
