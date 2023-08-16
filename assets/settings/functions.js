@@ -27,25 +27,105 @@ import automod from "../slashCommands/SC__Automod/setup.js";
 import {doc, setDoc} from "firebase/firestore";
 import db, {getSS} from "./firebase.js";
 import templates from "./templates.js";
-import channels from "./channels.js";
+import {categories, channels} from "./channels.js";
 import servers from "./servers.js";
 import roles from "./roles.js";
 import websites from "./websites.js";
 import forumTags from "./forumTags.js";
+import userInformations from "../contextMenus/CM__UserInformations/setup.js";
+import history from "./history.js";
+import users from "../slashCommands/SC__Users/setup.js";
 
 const guildId = process.env.GUILD_ID;
 
 class Functions {
-    constructor() {
-        this.client = client;
-        this.guildId = guildId;
-    }
+
 
     getCurrentFilePath() {
         try {
             return "/assets" + new Error().stack.split('\n')[2].trim().replace(/^at /, '').split("/assets")[1].split(".js")[0].concat(".js");
         } catch (e) {
             console.log(e);
+        }
+    }
+
+    kickUser(user, reason, interaction) {
+        functions.createEmbeds(templates.embeds.kickedFromServer.atextMessage(user, reason)).then(embeds => {
+            functions.getChannelById(channels.atext).then(channel => {
+                channel.send({embeds: embeds})
+            })
+        })
+        functions.createEmbeds(templates.embeds.kickedFromServer.announcementMessage(user, reason)).then(embeds => {
+            functions.getChannelById(channels.info).then(channel => {
+                channel.send({embeds: embeds}).then(
+                    msg => {
+
+
+                        this.addInformation({
+                            author: this.reformateUser(msg.author),
+                            messageId: msg.id,
+                            time: msg.createdTimestamp,
+                            type: "punishment",
+                            value: {
+                                type: "kick",
+                                user: this.reformateUser(user),
+                                reason: reason,
+                            }
+                        })
+                    }
+                )
+            })
+        })
+        functions.createEmbeds(templates.embeds.kickedFromServer.toUser(user, reason)).then(embeds => {
+            user.send({embeds: embeds})
+        })
+        interaction.guild.members.kick(user, reason).then(() => {
+
+            console.log("kick");
+
+        })
+    }
+    banUser(user, reason, interaction, banSeconds) {
+        functions.createEmbeds(templates.embeds.bannedFromServer.atextMessage(user, reason)).then(embeds => {
+            functions.getChannelById(channels.atext).then(channel => {
+                channel.send({embeds: embeds})
+            })
+        })
+        functions.createEmbeds(templates.embeds.bannedFromServer.announcementMessage(user, reason)).then(embeds => {
+            functions.getChannelById(channels.info).then(channel => {
+                channel.send({embeds: embeds}).then(
+                    msg => {
+                        this.addInformation({
+                            author: this.reformateUser(msg.author),
+                            messageId: msg.id,
+                            time: msg.createdTimestamp,
+                            type: "punishment",
+                            value: {
+                                type: "ban",
+                                user: this.reformateUser(user),
+                                reason: reason,
+                            }
+                        })
+                    }
+                )
+            })
+        })
+        functions.createEmbeds(templates.embeds.bannedFromServer.toUser(user, reason)).then(embeds => {
+            user.send({embeds: embeds})
+        })
+
+
+        interaction.guild.members.ban(user, {reason: reason, deleteMessageSeconds: banSeconds}).then(() => {
+            console.log("banned");
+        })
+    }
+
+    reformateUser(user) {
+        return {
+            discordID: user.id,
+            discordUsername: user.username,
+            discordAvatar: user.avatar,
+            discordDiscriminator: user.discriminator,
         }
     }
 
@@ -94,19 +174,19 @@ class Functions {
 
     async createButtons(components)  {
 
-        const myActionRows = []
+        let buttons = []
         components.forEach(component => {
             const button = new ButtonBuilder()
                 .setCustomId(component.customId ? component.customId : "error")
                 .setLabel(component.label ? component.label : "Error label")
                 .setStyle(component.style)
 
-            const row = new ActionRowBuilder().addComponents(button)
+            buttons.push(button)
 
-            myActionRows.push(row)
+
         })
 
-        return myActionRows
+        return new ActionRowBuilder().addComponents(buttons)
 
     }
 
@@ -239,6 +319,14 @@ class Functions {
         )
     }
 
+    assignRoleToUser(user, role) {
+        return user.roles.add(role)
+    }
+
+    removeRoleFromUser(user, role) {
+        return user.roles.remove(role)
+    }
+
     // get channel by id
     async getChannelById(id)  {
         return client.channels.cache.get(id)
@@ -257,6 +345,9 @@ class Functions {
 
     async editMessageInChannel (channelId, messageId, newMessage = null, newEmbeds = null, newComponents = null, newFiles = null )  {
 
+        console.log(guildId)
+        console.log(channelId)
+        console.log(messageId)
 
         return client.guilds.cache.get(guildId).channels.cache.get(channelId).messages.cache.get(messageId).edit({
             content: newMessage,
@@ -277,9 +368,9 @@ class Functions {
             await targetUser.roles.add(roles.member)
             await targetUser.roles.remove(roles.unverified)
 
-            getSS("users").then(
+            getSS(["users"]).then(
                 res => {
-                    const users = res.users
+                    const users = res["users"].users
                     const user = users.list.find(user => user.discordID === targetUser.id)
                     const userIndex = users.list.indexOf(user)
 
@@ -292,7 +383,6 @@ class Functions {
                     this.createEmbeds(templates.embeds.atextVerification.verified(user)).then(
                         embeds => {
                             this.editMessageInChannel(channels.atext,user.servers.find(server => server.name === servers.soutezeTryhard.name).atextMessageId,"", embeds, [] )
-                            interaction.reply({content: "Uživatel byl úspěšně ověřen."})
 
                         }
                     )
@@ -302,7 +392,7 @@ class Functions {
     }
 
     async mainInteractionListener(interaction) {
-        if (interaction.isCommand()) {
+        if (interaction.isChatInputCommand()) {
 
             const { commandName } = interaction;
 
@@ -323,6 +413,10 @@ class Functions {
                     await automod.execute(interaction);
                     break;
                 }
+                case users.name: {
+                    await users.execute(interaction);
+                    break;
+                }
                 default: {
                     await interaction.reply({content: "Unknown command", ephemeral: true});
                 }
@@ -332,10 +426,74 @@ class Functions {
 
             if (customId.startsWith("verify_user_")) {
                 await this.verifyUser(interaction)
-            } else {
-                interaction.reply({content: "Unknown button", ephemeral: true})
+            } else if (customId.startsWith("ban_user_")) {
+                console.log(customId)
+                await this.createModal(customId, "Ban user", [
+                    {
+                        customId: "ban_user_reason",
+                        label: "Proč by měl uživatel dostat ban?",
+                        placeholder: "Reason",
+                        value: "",
+                        style: "paragraph"
+                    } ]).then(
+                    modal => {
+                        interaction.showModal(modal)
+                    })
+            } else if (customId.startsWith("kick_user_")) {
+                console.log(customId)
+
+                await this.createModal(customId, "Kick user", [
+                    {
+                        customId: "kick_user_reason",
+                        label: "Proč by měl být uživatel vyhozeen?",
+                        placeholder: "Reason",
+                        value: "",
+                        style: "paragraph"
+                    } ]).then(
+                    modal => {
+                        interaction.showModal(modal)
+                    })
             }
 
+        } else if (interaction.isContextMenuCommand()) {
+            const { commandName } = interaction;
+
+            console.log(commandName)
+
+            switch (commandName) {
+                case "user-informations": {
+                    await userInformations.execute(interaction);
+
+                    break;
+                }
+                default: {
+                    await interaction.reply({content: "Unknown context menu command", ephemeral: true});
+                }
+            }
+        } else if (interaction.isModalSubmit()) {
+            const { customId } = interaction;
+            if (customId.startsWith("ban_user_")) {
+
+                const targetUser = this.getMemberById(customId.split("_")[2]).user
+                const reason = interaction.fields.getTextInputValue("ban_user_reason")
+
+                this.banUser(targetUser, reason, interaction, 0)
+
+                functions.banUser(targetUser, reason, interaction, 0)
+
+
+            } else if (customId.startsWith("kick_user_")) {
+
+                console.log(customId)
+
+                const targetUser = this.getMemberById(customId.split("_")[2]).user
+                const reason = interaction.fields.getTextInputValue("kick_user_reason")
+
+                this.kickUser(targetUser, reason, interaction)
+
+                interaction.reply(answers.userKicked(targetUser, reason))
+
+            }
         }
 
     }
@@ -343,6 +501,10 @@ class Functions {
     async memberJoinListener(member) {
 
         console.log("member joined")
+
+        if (member.user.bot) return
+
+        this.assignRoleToUser(member, roles.unverified)
 
         answers.welcomeMessage(member).then(
             msg => {
@@ -352,20 +514,25 @@ class Functions {
 
         this.createEmbeds(templates.embeds.atextVerification.unverified(member)).then(
             embeds => {
-                this.createButtons([templates.buttons.verification.verify(member)]).then(
+                this.createButtons([templates.buttons.verification.verify(member), templates.buttons.punishment.ban(member.user),templates.buttons.punishment.kick(member.user) ]).then(
                     buttons => {
                         this.getChannelById(channels.atext).then(
                             channel => {
-                                this.sendMessageToChannel(channel, ``, embeds, buttons).then(
+                                this.sendMessageToChannel(channel, ``, embeds, [buttons]).then(
                                     msg => {
-                                        getSS("users").then(
+                                        getSS(["users"]).then(
                                             res => {
-                                                function updateUserInServer(users, memberId, serverName, msgId) {
-                                                    let myUser = users.list.find(user => user.discordID === memberId);
+                                                function updateUserInServer(users, serverName, msgId) {
+                                                    let myUser = users.list.find(user => user.discordID === member.id);
+
+                                                    console.log(member.user)
 
                                                     if (!myUser) {
                                                         myUser = {
-                                                            discordID: memberId,
+                                                            discordID: member.id,
+                                                            discordUsername: member.user.username,
+                                                            discordAvatar: member.user.avatar,
+                                                            discordDiscriminator: member.user.discriminator,
                                                             servers: []
                                                         };
                                                         users.list.push(myUser);
@@ -391,9 +558,9 @@ class Functions {
                                                 }
 
 // Usage
-                                                let users = res.users;
+                                                let users = res["users"].users;
 
-                                                updateUserInServer(users, member.id, servers.soutezeTryhard.name, msg.id);
+                                                updateUserInServer(users, servers.soutezeTryhard.name, msg.id);
                                                 setDoc(doc(db, "ssbot", "users"), { users: users });
                                             }
                                         )
@@ -408,10 +575,10 @@ class Functions {
     }
 
     async memberLeaveListener(member) {
-        getSS("users").then(
+        getSS(["users"]).then(
             res => {
 
-                const users = res.users;
+                const users = res["users"].users;
 
                 // Find the user by their Discord ID
                 const user = users.list.find(user => user.discordID === member.id);
@@ -424,11 +591,19 @@ class Functions {
                         // Update the server properties
                         server.joined = false;
                         server.verified = false;
+
+                        this.createEmbeds(templates.embeds.atextVerification.alreadyLeft(member)).then(
+                            embeds => {
+                                console.log(server)
+                                console.log(channels.atext)
+                                server.atextMessageId && this.editMessageInChannel(channels.atext, server.atextMessageId, "", embeds, [])
+                            }
+                        )
                     }
                 }
 
                 // Save the updated users object to the database
-                setDoc(doc(db, "ssbot", "users"), { users });
+                setDoc(doc(db, "ssbot",     "users"), { users });
 
                 this.createEmbeds(templates.embeds.leaveServer.atextMessage(member)).then(
                     embeds => {
@@ -446,40 +621,55 @@ class Functions {
     async messageCreateListener(message) {
 
         if (message.author.bot) return;
-        this.getChannelById(channels.history).then(
-            channel => {
-                const myThread = channel.threads.cache.find(thread => thread.name === message.channel.name)
-                if (myThread) {
-                    myThread.send({
-                        content: `## **[${message.author}]**   :incoming_envelope:   **[${message.channel}]**   :clock2:   **[${new Date(message.createdTimestamp).toLocaleString("cs-CZ")}]**\n> ${message.content}`,
-                        files: message.attachments.map(attachment => attachment.url),
-                    	allowedMentions: {parse: []	},
-                        flags: MessageFlags.SuppressNotifications
-                    })
-                } else {
-                    channel.threads.create({
-                        name: message.channel.name,
-                        autoArchiveDuration: 1440,
-                        reason: "Historie kanálu",
-                        startMessage: `# Historie kanálu ${message.channel} \n\n Toto je historie kanálu spravována Soutěže Tryhard Botem \n\n Tento kanál je vytvořen automaticky, a bude kopírovat všechny zprávy z kanálu ${message.channel} \n\n Tento kanál je vytvořen pro účely lepší moderace členů serveru.`,
-                        message: `# Historie kanálu ${message.channel} \n\n Toto je historie kanálu spravována Soutěže Tryhard Botem \n\n Tento kanál je vytvořen automaticky, a bude kopírovat všechny zprávy z kanálu ${message.channel} \n\n Tento kanál je vytvořen pro účely lepší moderace členů serveru.`,
+    
+        if (history.allowedChannels.includes(message.channel.id)) {
+            this.getChannelById(channels.history).then(
+                channel => {
+                    const myThread = channel.threads.cache.find(thread => thread.name === message.channel.name)
+                    if (myThread) {
+                        myThread.send({
+                            content: templates.messages.history.newMessage(message),
+                            files: message.attachments.map(attachment => attachment.url),
+                            allowedMentions: {parse: []	},
+                            flags: MessageFlags.SuppressNotifications
+                        })
+                    } else {
+                        channel.threads.create({
+                            name: message.channel.name,
+                            autoArchiveDuration: 1440,
+                            reason: "Historie kanálu",
+                            message: templates.messages.history.newChannel(message.channel),
+                        }).then(
+                            thread => {
 
-                    }).then(
-                        thread => {
-                            thread.send({
-                                content: `## **[${message.author}]**   :incoming_envelope:   **[${message.channel}]**   :clock2:   **[${new Date(message.createdTimestamp).toLocaleString("cs-CZ")}]**\n> ${message.content}`,
-                                files: message.attachments.map(attachment => attachment.url),
-                                allowedMentions: {parse: []	},
-                                flags: MessageFlags.SuppressNotifications
-                            })
-                        }
-                    )
+                                const appliedTags = [];
+
+                                if (message.channel.parent.id === categories["text-channels"]) {
+                                    appliedTags.push(forumTags.history["text-channels"]);
+                                }
+
+                                thread.setAppliedTags(appliedTags);
+
+                                thread.send({
+                                    content: templates.messages.history.newMessage(message),
+                                    files: message.attachments.map(attachment => attachment.url),
+                                    allowedMentions: {parse: []	},
+                                    flags: MessageFlags.SuppressNotifications
+                                })
+                            }
+                        )
+                    }
                 }
-            }
-        )
+            )
+        }
+
+
     }
 
+
+
     async competitionListener(document) {
+
         const data = document.data()
 
         let allCompetitions = data.list.added
@@ -492,6 +682,9 @@ class Functions {
                 if (competition.postId === null) {
                     this.getChannelById(channels.soutěže).then(
                         channel => {
+                            console.log(channels.soutěže)
+                            console.log(client.channels.cache.get("1130949408989663274"))
+                            console.log(guildId)
                             channel.threads.create({
                                 name: competition.name,
                                 autoArchiveDuration: 1440,
@@ -506,27 +699,27 @@ class Functions {
                                     const appliedTags = [];
 
                                     if (competition.registration.enabled) {
-                                        appliedTags.push(forumTags.registrace);
+                                        appliedTags.push(forumTags.competitions.registrace);
                                     }
 
                                     if (competition.type === "soutěž") {
-                                        appliedTags.push(forumTags.soutěž);
+                                        appliedTags.push(forumTags.competitions.soutěž);
                                     }
 
                                     if (competition.type === "soustředění") {
-                                        appliedTags.push(forumTags.soustředění);
+                                        appliedTags.push(forumTags.competitions.soustředění);
                                     }
 
                                     if (competition.type === "seminář") {
-                                        appliedTags.push(forumTags.seminář);
+                                        appliedTags.push(forumTags.competitions.seminář);
                                     }
 
                                     if (competition.type === "olympiáda") {
-                                        appliedTags.push(forumTags.olympiáda);
+                                        appliedTags.push(forumTags.competitions.olympiáda);
                                     }
 
                                     if (competition.competition.dateType === "range") {
-                                        appliedTags.push(forumTags.víceDní);
+                                        appliedTags.push(forumTags.competitions.víceDní);
                                     }
 
                                     thread.setAppliedTags(appliedTags);
@@ -613,6 +806,95 @@ class Functions {
                 }).reverse()
                 processComponentsArray(myCompetitionsSorted)
             }, 15000
+        )
+    }
+
+    informationListener(document) {
+        const data = document.data()
+
+        let allInformations = data.list
+
+        if (allInformations.some(information => information.messageId === null)) {
+            allInformations.forEach((information, index) => {
+                if (information.messageId === null) {
+                    this.getChannelById(channels.info).then(
+                        channel => {
+                            channel.send(
+                                {
+                                    content: information.value.content
+                                }
+                            ).then(
+                                msg => {
+                                    information.messageId = msg.id
+                                    allInformations[index] = information
+                                }
+                            )
+                        }
+                    )
+                }
+            })
+            setTimeout(
+                () => {
+                    setDoc(doc(db, "ssbot", "informations"), {list: allInformations})
+                }, 2000
+            )
+        }
+    }
+
+    updateUsers() {
+        getSS(["users"]).then(
+            res => {
+                let users = res["users"].users
+                let changed = false
+
+                users.list.forEach(
+                    (user, index) => {
+                        if (!user?.servers?.find((server) => server?.name === "Soutěže Tryhard").verified) return
+                        const userOnServer = this.getMemberById(user.discordID)
+                        console.log(userOnServer)
+
+                        if (userOnServer) {
+                            if (userOnServer.user.username !== user.discordUsername) {
+                                user.discordUsername = userOnServer.user.username
+                                users.list[index] = user
+                                changed = true
+                            }
+                            if (userOnServer.user.discriminator !== user.discordDiscriminator) {
+                                user.discordDiscriminator = userOnServer.user.discriminator
+                                users.list[index] = user
+                                changed = true
+                            }
+                            if (userOnServer.user.avatar !== user.discordAvatar) {
+                                user.discordAvatar = userOnServer.user.avatar
+                                users.list[index] = user
+                                changed = true
+                            }
+                        }
+                    }
+                )
+
+                if (changed) {
+                    setDoc(doc(db, "ssbot", "users"), {users: users})
+                    console.log("users updated")
+                }
+
+            }
+        )
+    }
+
+    addInformation({author, messageId, time, type, value}) {
+        getSS(["informations"]).then(
+            res => {
+                const informations = res["informations"].list
+                informations.push({
+                    author: author,
+                    type: type,
+                    time: time,
+                    messageId: messageId,
+                    value: value
+                })
+                setDoc(doc(db, "ssbot", "informations"), {list: informations})
+            }
         )
     }
 }

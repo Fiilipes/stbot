@@ -2,7 +2,7 @@ import links from "./links.js";
 import images from "./images.js";
 import client from "./discordjssetup.js";
 import websites from "./websites.js";
-import {hyperlink} from "discord.js";
+import {Colors, hyperlink} from "discord.js";
 import functions from "./functions.js";
 
 const errorAnswers = {
@@ -129,6 +129,110 @@ const answers = {
             "Děkuji za pochopení\n" +
             "Soutěže Tryhard Bot"
 
+    },
+    "notInDatabase": {
+        "content": "Tento uživatel není v databázi.",
+        "ephemeral": true
+    },
+    "userBanned": (user, reason) => {
+        return {
+            "embeds": [
+                {
+                    color: Colors.DarkerGrey,
+                    title: 'Uživatel byl zabanován',
+                    description: `Uživatel ${user} byl zabanován z důvodu: ${reason}`,
+                    thumbnail: {
+                        url: images.banned
+                    },
+                    timestamp: new Date(),
+                    footer: {
+                        text: client.user.username,
+                        iconURL: client.user.avatarURL(),
+                    }
+                }
+            ],
+            "ephemeral": true
+        }
+    },
+    "userMuted": (user, reason, time) => {
+        return {
+            "embeds": [
+                {
+                    color: Colors.DarkerGrey,
+                    title: 'Uživatel byl ztlumen',
+                    description: `Uživatel ${user} byl ztlumen z důvodu: ${reason} na dobu ${time} minut.`,
+                    thumbnail: {
+                        url: images.muted
+                    },
+                    timestamp: new Date(),
+                    footer: {
+                        text: client.user.username,
+                        iconURL: client.user.avatarURL(),
+                    }
+                }
+            ],
+            "ephemeral": true
+        }
+    },
+    "userWarned": (user, reason) => {
+        return {
+            "embeds": [
+                {
+                    color: Colors.DarkerGrey,
+                    title: 'Uživatel byl varován',
+                    description: `Uživatel ${user} byl varován z důvodu: ${reason}`,
+                    thumbnail: {
+                        url: images.warned
+                    },
+                    timestamp: new Date(),
+                    footer: {
+                        text: client.user.username,
+                        iconURL: client.user.avatarURL(),
+                    }
+                }
+            ],
+            "ephemeral": true
+        }
+    },
+    "userUnmuted": (user) => {
+        return {
+            "embeds": [
+                {
+                    color: Colors.DarkerGrey,
+                    title: 'Uživateli byl zrušen mute',
+                    description: `Uživateli ${user} byl zrušen jeho mute.`,
+                    thumbnail: {
+                        url: images.unmuted
+                    },
+                    timestamp: new Date(),
+                    footer: {
+                        text: client.user.username,
+                        iconURL: client.user.avatarURL(),
+                    }
+                }
+            ],
+            "ephemeral": true
+        }
+    },
+    "userKicked": (user, reason) => {
+        return {
+            "embeds": [
+                {
+                    color: Colors.DarkerGrey,
+                    title: 'Uživatel byl vyhozen',
+                    description: `Uživatel ${user} byl vyhozen z důvodu: ${reason}`,
+                    thumbnail: {
+                        url: images.kicked
+                    },
+                    timestamp: new Date(),
+                    footer: {
+                        text: client.user.username,
+                        iconURL: client.user.avatarURL(),
+                    }
+                }
+            ],
+            "ephemeral": true
+        }
     }
 }
 

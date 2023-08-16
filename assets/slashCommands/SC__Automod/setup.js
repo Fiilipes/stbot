@@ -28,11 +28,11 @@ const SLASHCOMMAND = new SlashCommandBuilder()
             )
     )
 
-const help = {
+const automod = {
     name: NAME,
     description: DESCRIPTION,
     slashCommand: SLASHCOMMAND.toJSON(),
     execute
 }
 
-export default help;
+export default automod;

@@ -3,8 +3,6 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import {collection, getDocs} from "firebase/firestore";
 
-
-
 // env
 import dotenv from 'dotenv';
 dotenv.config();
@@ -26,21 +24,21 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const ref__ss  = collection(db, "ssbot");
-const ref__notes = collection(db, "notes");
 
 // Functions to get data from Firebase
-const getSS = async (id) => {
+const getSS = async (ids) => {
     const data = await getDocs(ref__ss);
-    return data.docs.map((doc) => ({...doc.data(), id: doc.id} )).find(doc => doc.id === id)
-}
-const getNotes = async () => {
-    const data = await getDocs(ref__notes);
-    console.log(data.docs.map((doc) => ({...doc.data(), id: doc.id} )))
+
+    const returnData = {}
+
+    ids.forEach((id) => {
+        returnData[id] = data.docs.map((doc) => ({...doc.data(), id: doc.id} )).find(doc => doc.id === id)
+    })
+    return returnData;
 }
 
 export {
-    getSS,
-    getNotes,
+    getSS
 }
 
 export default db;

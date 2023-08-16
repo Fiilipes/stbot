@@ -22,7 +22,9 @@ import createCategory from "./assets/slashCommands/SC__CreateCategory/setup.js";
 import functions from "./assets/settings/functions.js";
 import automod from "./assets/slashCommands/SC__Automod/setup.js";
 import db from "./assets/settings/firebase.js";
-import {collection, doc, onSnapshot} from "firebase/firestore";
+import {doc, onSnapshot} from "firebase/firestore";
+import userInformations from "./assets/contextMenus/CM__UserInformations/setup.js";
+import users from "./assets/slashCommands/SC__Users/setup.js";
 
 
 client.once(Events.ClientReady, c => {
@@ -42,8 +44,14 @@ client.on(Events.InteractionCreate, (interaction) => functions.mainInteractionLi
 // somebody creates a message
 client.on(Events.MessageCreate, message => functions.messageCreateListener(message));
 
-// some competition is changed / created / deleted
-onSnapshot(doc(db, "ssbot", "soutěže"), (doc) => functions.competitionListener(doc));
+setInterval(
+    () => {
+        functions.updateUsers();
+    }, 6000
+)
+
+onSnapshot(doc(db, "ssbot", "soutěže"), (doc) => setTimeout(() => functions.competitionListener(doc), 1000));
+onSnapshot(doc(db, "ssbot", "informations"), (doc) => setTimeout(() => functions.informationListener(doc), 1000));
 
 
 new REST({version: '10'}).setToken(token).put(
@@ -52,10 +60,16 @@ new REST({version: '10'}).setToken(token).put(
         body:
 
             [
+                // Slash commands
                 help.slashCommand,
                 sendMsg.slashCommand,
                 createCategory.slashCommand,
-                automod.slashCommand
+                automod.slashCommand,
+                users.slashCommand,
+
+                // Context menus
+                userInformations.contextMenu
+
             ]
     }
 );
