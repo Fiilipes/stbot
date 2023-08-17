@@ -34,6 +34,20 @@ client.once(Events.ClientReady, c => {
 
 client.login(token);
 
+import pkg from "node:process"
+const nodeProcess = pkg.process;
+
+process.on('unhandledRejection', async(reason, promise) => {
+    console.log('Unhandled rejection at:', promise, 'reason:', reason)
+});
+process.on("uncaughtException",  (err) => {
+    console.log("Uncaught exception: ", err);
+})
+process.on("uncaughtExceptionMonitor",  (err, origin) => {
+    console.log("Uncaught exception monitor: ", err, origin);
+})
+
+
 // somebody joined the server
 client.on(Events.GuildMemberAdd, member => functions.memberJoinListener(member));
 // somebody left the server

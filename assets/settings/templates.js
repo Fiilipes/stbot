@@ -117,7 +117,7 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
         "bannedFromServer": {
             "atextMessage": (member, reason) => ( {
                 title: "Člen byl zabanován",
-                description: `${member.username} byl zabanován z důvodu: ${reason}`,
+                description: `**${member.username}** byl zabanován z důvodu:\n*${reason}*`,
                 color: Colors.Red,
                 thumbnail: member.displayAvatarURL(),
                 timestamp: new Date(),
@@ -128,7 +128,7 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
             }),
             "announcementMessage": (member, reason) => ( {
                 title: "Člen byl zabanován",
-                description: `${member.username} byl zabanován z důvodu: ${reason}`,
+                description: `**${member.username}** byl zabanován z důvodu:\n*${reason}*`,
                 color: Colors.Red,
                 thumbnail: member.displayAvatarURL(),
                 timestamp: new Date(),
@@ -138,7 +138,7 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
                 }
             }),
             "toUser": (member, reason) => ( {
-                title: "Byl jsi zabanován ze serveru " + bold(servers.soutezeTryhard),
+                title: "Byl jsi zabanován ze serveru " + bold(servers.soutezeTryhard.name),
                 description: `Byl jsi zabanován z důvodu: ${reason}\n- Pokud si myslíš, že si dostal ban neprávem, obrať se na **A-team**`,
                 color: Colors.Red,
                 thumbnail: images.banned,
@@ -152,7 +152,7 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
         "kickedFromServer": {
             "atextMessage": (member, reason) => ( {
                 title: "Člen byl vyhozen",
-                description: `${member.username} byl vyhozen z důvodu: ${reason}`,
+                description: `**${member.username}** byl vyhozen z důvodu:\n*${reason}*`,
                 color: Colors.Red,
                 thumbnail: member.displayAvatarURL(),
                 timestamp: new Date(),
@@ -163,7 +163,7 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
             }),
             "announcementMessage": (member, reason) => ( {
                 title: "Člen byl vyhozen",
-                description: `${member.username} byl vyhozen z důvodu: ${reason}`,
+                description: `**${member.username}** byl vyhozen z důvodu:\n*${reason}*`,
                 color: Colors.Red,
                 thumbnail: member.displayAvatarURL(),
                 timestamp: new Date(),
@@ -173,7 +173,7 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
                 }
             }),
             "toUser": (member, reason) => ( {
-                title: "Byl jsi vyhozen ze serveru " + bold(servers.soutezeTryhard),
+                title: "Byl jsi vyhozen ze serveru " + bold(servers.soutezeTryhard.name),
                 description: `Byl jsi vyhozen z důvodu: ${reason}\n- Pokud si myslíš, že si dostal kick neprávem, obrať se na **A-team**`,
                 color: Colors.Red,
                 thumbnail: images.kicked,

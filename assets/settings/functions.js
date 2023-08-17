@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
 import client from "./discordjssetup.js";
+import pkg from 'chatgpt-scraper-deobfuscated';
+const ChatGpt = pkg.ChatGPT;
 
 dotenv.config();
 
@@ -621,7 +623,14 @@ class Functions {
     async messageCreateListener(message) {
 
         if (message.author.bot) return;
-    
+
+        if (message.channel.id === channels.npctalk) {
+            message.channel.sendTyping()
+            const res = await ChatGpt(`Jsi discord assistent, který bude pomáhat lidem na našem discord serveru. Například když se tě někdo zeptá jaký je web našeho serveru odpovíš survivalserver.cz. Toto je otázka na kterou se tě někdo zeptá jak bys odpověděl ${message.content}. Nepiš blbosti, piš jen to co víš. Nepiš nic o tom jak bys odpověděl na otázky. Jen odpověz na otázku. Pokud nebude otázka dávat smysl a nebo nebudeš moci odpovědět pomocí dat co jsem ti poskytl, odpověz že na tuto otázku zatím neznáš odpověď. Nepiš jak odpovídáš na otázky. Když nevíš co napsat tak místo psaní věcí na které se nikdo neptal napiš že nevíš. Pokud budeš psát blbosti, budeš z toho mít problémy. Pokud budeš psát blbosti, budeš z toho mít problémy.`)
+            message.reply(res.response)
+        }
+
+
         if (history.allowedChannels.includes(message.channel.id)) {
             this.getChannelById(channels.history).then(
                 channel => {
@@ -819,16 +828,14 @@ class Functions {
                 if (information.messageId === null) {
                     this.getChannelById(channels.info).then(
                         channel => {
-                            channel.send(
-                                {
-                                    content: information.value.content
-                                }
-                            ).then(
+
+                            this.impersonateUserInChannel(information.author.discordUsername, information.author.discordAvatar, information.value.content, channel).then(
                                 msg => {
                                     information.messageId = msg.id
                                     allInformations[index] = information
                                 }
                             )
+
                         }
                     )
                 }
@@ -839,6 +846,27 @@ class Functions {
                 }, 2000
             )
         }
+    }
+
+    async impersonateUserInChannel(name, avatarUrl, message, channel) {
+        return channel.createWebhook({
+            name: name,
+            avatar: avatarUrl,
+        }).then(
+            webhook => {
+                return webhook.send(message).then(
+                    msg => {
+                        setTimeout(
+                            () => {
+                                webhook.delete()
+                            }, 3000
+                        )
+                        return msg
+                    }
+                )
+
+            }
+        )
     }
 
     updateUsers() {

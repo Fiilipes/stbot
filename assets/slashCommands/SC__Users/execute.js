@@ -57,9 +57,9 @@ const execute = async (interaction) => {
                         case "kick":
                             console.log("------------------------------------------------------------")
                             console.log(user)
-                            // interaction.reply(answers.userKicked(user, reason))
-                            //
-                            // functions.kickUser(user, reason, interaction)
+                            interaction.reply(answers.userKicked(user, reason))
+
+                            functions.kickUser(user, reason, interaction)
 
                             break;
                         case "mute":
