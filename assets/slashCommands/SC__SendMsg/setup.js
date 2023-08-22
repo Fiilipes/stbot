@@ -46,6 +46,13 @@ const SLASHCOMMAND = new SlashCommandBuilder()
                             .setDescription('Zpráva')
                             .setRequired(true)
                 )
+                .addBooleanOption(
+                    option =>
+                        option
+                            .setName('impersonate')
+                            .setDescription('Poslat zprávu za pomocí Vaší identity. (Webhook)')
+                            .setRequired(false)
+                )
     )
 
 

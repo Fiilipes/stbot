@@ -1,5 +1,14 @@
+import templates from "../../settings/templates.js";
+import functions from "../../settings/functions.js";
+import answers from "../../settings/answers.js";
+
 const execute = async (interaction) => {
-    interaction.reply({content: "Help is on the way!", ephemeral: true});
+    answers.help().then(
+        answer => {
+            interaction.reply(answer);
+
+        }
+    )
 }
 
 export default execute;

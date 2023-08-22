@@ -2,32 +2,32 @@ import {Client, GatewayIntentBits, Partials} from "discord.js";
 
 const client = new Client(
     {
-        intents:
-            [
+            intents:
+                [
 
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.DirectMessages,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.GuildMessageReactions,
-                GatewayIntentBits.GuildMessageTyping,
-                GatewayIntentBits.MessageContent,
-                GatewayIntentBits.GuildVoiceStates,
-                GatewayIntentBits.GuildMembers,
-                GatewayIntentBits.GuildPresences,
-                GatewayIntentBits.GuildBans,
-                GatewayIntentBits.GuildInvites,
-                GatewayIntentBits.GuildEmojisAndStickers,
-                GatewayIntentBits.GuildIntegrations,
-                GatewayIntentBits.GuildWebhooks,
+                        GatewayIntentBits.Guilds,
+                        GatewayIntentBits.DirectMessages,
+                        GatewayIntentBits.GuildMessages,
+                        GatewayIntentBits.GuildMessageReactions,
+                        GatewayIntentBits.GuildMessageTyping,
+                        GatewayIntentBits.MessageContent,
+                        GatewayIntentBits.GuildVoiceStates,
+                        GatewayIntentBits.GuildMembers,
+                        GatewayIntentBits.GuildPresences,
+                        GatewayIntentBits.GuildBans,
+                        GatewayIntentBits.GuildInvites,
+                        GatewayIntentBits.GuildEmojisAndStickers,
+                        GatewayIntentBits.GuildIntegrations,
+                        GatewayIntentBits.GuildWebhooks,
 
-            ],
-        partials:
-            [
+                ],
+            partials:
+                [
 
-                Partials.Channel,
-                Partials.Message
+                        Partials.Channel,
+                        Partials.Message
 
-            ]
+                ]
     }
 );
 

@@ -8,18 +8,19 @@ import images from "./images.js";
 
 const templates = {
     "messages": {
-      	"competitionPost": competition =>
+      	"competitionPost": (competition,chatChannel,announcmentChannel, role) =>
 `
 # ${competition.name}
 *${competition.type}*
 
-${competition.registration.enabled ? `- Datum registrace: **<t:${competition.registration.date.seconds}:D>**` : ""}
-- Datum soutěže: ${competition.competition.dateType === "single" ? `**<t:${competition.competition.date.seconds}>** | **<t:${competition.competition.date.seconds}:D>**` : `**<t:${competition.competition.date.from.seconds}>** | **<t:${competition.competition.date.from.seconds}:D>** - **<t:${competition.competition.date.to.seconds}:D>**`}
-- Místo konání: **${competition.place}**
-- Bližší informace: **${competition.description}**
+${competition.registration.enabled ? `- Datum registrace: **<t:${competition.registration.date.seconds}:D>**` : "- Registrace není potřeba"}
+- Datum soutěže: ${competition.competition.dateType === "single" ? `**<t:${competition.competition.date.seconds}:R>** | **<t:${competition.competition.date.seconds}:D>**` : `**<t:${competition.competition.date.from.seconds}:R>** | **<t:${competition.competition.date.from.seconds}:D>** - **<t:${competition.competition.date.to.seconds}:D>**`}
+${chatChannel && announcmentChannel ? `- Novinky, informace a chat pro soutěž: **${announcmentChannel}** | **${chatChannel}**` : ""}
+${competition.place ? `- Místo konání: **${competition.place}**` : ""}
+${competition.description ? `- Bližší informace: **${competition.description}**` : ""}
 ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
-    user => ` <@${user.id}>`
-)}**` : "Nikdo se neúčastní"}
+    user => ` <@${user.discordID}>`
+)}**${role?` | ${role}`:""}` : "- Nikdo se neúčastní"}
 - Web: **${hyperlink("survivalserver.cz/soutezetryhard/udalosti/" + competition.name.replace(/ /g, ""), websites.survivalServer + "/soutezetryhard/udalosti/" + competition.name.toLowerCase().replace(/ /g, ""))}**
 `,
 
@@ -28,8 +29,15 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
         "history": {
               "newChannel": channel => `# Historie kanálu ${channel} \n\n Toto je historie kanálu spravována Soutěže Tryhard Botem \n\n Tento kanál je vytvořen automaticky, a bude kopírovat všechny zprávy z kanálu ${channel} \n\n Tento kanál je vytvořen pro účely lepší moderace členů serveru.`,
               "newMessage": message => `## **[${message.author}]**   :incoming_envelope:   **[${message.channel}]**   :clock2:   **[${new Date(message.createdTimestamp).toLocaleString("cs-CZ")}]**\n> ${message.content}`
-        }
+        },
+        "competitionAnnouncment": (competition, chatChannel, announcmentChannel, thread) =>
+`
+# ${competition.name}
+- Tato kategorie byla vytvořena pro událost **${thread}**
 
+> ${announcmentChannel} slouží jako zdroj informací a novinek k události
+> ${chatChannel} slouží jako místo pro komunikaci mezi účastníky soutěže
+`
     },
     "embeds": {
         "atextVerification": {
@@ -53,9 +61,9 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
             }),
             "verified": (user) => ( {
                 title: "Nový člen serveru",
-                description: `${functions.getMemberById(user.discordID)} je nyní ověřený!`,
+                description: `${functions.get.getMemberById(user.discordID)} je nyní ověřený!`,
                 color: Colors.Green,
-                thumbnail: functions.getMemberById(user.discordID).displayAvatarURL(),
+                thumbnail: functions.get.getMemberById(user.discordID).displayAvatarURL(),
                 fields: [
                     {
                         name: "Status",
@@ -189,7 +197,7 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
                 title: "Člen byl ztlumen",
                 description: `${member} byl ztlumen z důvodu: **${reason}** na dobu **${time}** minut.\n Po uplynutí doby mu bude mute automaticky zrušen.`,
                 color: Colors.DarkVividPink,
-                thumbnail: member.user.displayAvatarURL(),
+                thumbnail: member.displayAvatarURL(),
                 timestamp: new Date(),
                 footer: {
                     text: client.user.username,
@@ -200,7 +208,7 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
                 title: "Člen byl ztlumen",
                 description: `${member} byl ztlumen z důvodu: **${reason}** na dobu **${time}** minut.`,
                 color: Colors.DarkVividPink,
-                thumbnail: member.user.displayAvatarURL(),
+                thumbnail: member.displayAvatarURL(),
                 timestamp: new Date(),
                 footer: {
                     text: client.user.username,
@@ -208,12 +216,10 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
                 }
             } ),
             "toUser": (member, reason, time) => ( {
-                title: "Byl jsi ztlumen na serveru " + bold(servers.soutezeTryhard),
+                title: "Byl jsi ztlumen na serveru " + bold(servers.soutezeTryhard.name),
                 description: `Byl jsi ztlumen z důvodu: **${reason}** na dobu **${time}** minut.\n Po uplynutí doby ti bude mute automaticky zrušen. \nPokud si myslíš, že si dostal mute neprávem, obrať se na **A-team**`,
                 color: Colors.DarkVividPink,
-                thumbnail: {
-                    url: images.muted
-                },
+                thumbnail: images.muted,
                 timestamp: new Date(),
                 footer: {
                     text: client.user.username,
@@ -223,23 +229,21 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
         },
         "unmuted": {
             "atextMessage": (member) => ( {
-                title: "Člen byl odmuten",
-                description: `${member} byl odmuten.`,
+                title: "Člen byl odztlumen",
+                description: `Členovi ${member} bylo zrušeno ztlumení`,
                 color: Colors.DarkVividPink,
-                thumbnail: member.user.displayAvatarURL(),
+                thumbnail: member.displayAvatarURL(),
                 timestamp: new Date(),
                 footer: {
                     text: client.user.username,
                     iconURL: client.user.avatarURL(),
                 }
             } ),
-            "toUser": (member) => ( {
-                title: "Tvůj mute na serveru " + bold(servers.soutezeTryhard) + " byl zrušen",
+            "toUser": () => ( {
+                title: "Tvůj mute na serveru " + bold(servers.soutezeTryhard.name) + " byl zrušen",
                 description: `Již můžeš chatovat a psát na serveru jako předtím.`,
                 color: Colors.DarkVividPink,
-				thumbnail: {
-                    url: images.unmuted
-                },
+				thumbnail: images.unmuted,
                 timestamp: new Date(),
                 footer: {
                     text: client.user.username,
@@ -248,6 +252,7 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
 
             } )
         },
+
 
     },
     "buttons": {

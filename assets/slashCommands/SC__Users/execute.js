@@ -27,7 +27,7 @@ const execute = async (interaction) => {
     }
 
 
-    if (await functions.checkIfHasRole(interaction.member, roles.ateam)) {
+    if (await functions.control.checkIfHasRole(interaction.member, roles.ateam)) {
         let userInDatabase
         let indexOfUserInDatabase
         let users
@@ -45,29 +45,30 @@ const execute = async (interaction) => {
                     switch (subcommand) {
                         case "ban":
 
-                            console.log("hello")
-                            console.log(user)
-
                             interaction.reply(answers.userBanned(user, reason))
 
-                            functions.banUser(user, reason, interaction, banSeconds)
+                            functions.user.banUser(user, reason, interaction, banSeconds)
 
 
                             break;
                         case "kick":
-                            console.log("------------------------------------------------------------")
-                            console.log(user)
+
                             interaction.reply(answers.userKicked(user, reason))
 
-                            functions.kickUser(user, reason, interaction)
+                            functions.user.kickUser(user, reason, interaction)
 
                             break;
                         case "mute":
-                            console.log("mute");
+
+                            interaction.reply(answers.userMuted(user, reason, time))
+
+                            functions.user.muteUser(user, reason, interaction, time)
 
                             break;
                         case "unmute":
                             console.log("unmute");
+
+                            functions.user.unMuteUser(user)
 
                             break;
                         case "warn":
@@ -84,6 +85,8 @@ const execute = async (interaction) => {
                             break;
                         case "info":
                             console.log("info");
+
+                            functions.user.showUserInformation(user, interaction)
 
                             break;
                         default:

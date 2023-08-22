@@ -11,34 +11,57 @@ const execute = async (interaction) => {
         const user = interaction.options.getUser('user') ? interaction.options.getUser('user') : undefined;
         const channel = interaction.options.getChannel('channel') ? interaction.options.getChannel('channel') : undefined;
         const message = interaction.options.getString('message') ? interaction.options.getString('message') : undefined;
+        const impersonate = interaction.options.getBoolean('impersonate') ? interaction.options.getBoolean('impersonate') : false;
 
         switch (subcommand) {
             case 'guild':
 
                 if (channel) {
-                    await functions.sendMessageToChannel(
-                        channel,
-                        message,
-                    ).then(
-                        async (sentMessage) => {
-                            answers.messageSentInChannel(
-                                channel,
-                                sentMessage
-                            ).then(
-                                async (answer) => {
-                                    await interaction.reply(answer)
-                                }
-                            ).catch(
-                                async (error) => {
-                                    await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
-                                }
-                            )
-                        }
-                    ).catch(
-                        async (error) => {
-                            await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
-                        }
-                    )
+                    if (impersonate) {
+                        functions.user.impersonateUserInChannel(interaction.user.username, interaction.user.avatarURL, message, channel).then(
+                            async (sentMessage) => {
+                                answers.messageSentInChannel(
+                                    channel,
+                                    sentMessage
+                                ).then(
+                                    async (answer) => {
+                                        await interaction.reply(answer)
+                                    }
+                                ).catch(
+                                    async (error) => {
+                                        await interaction.reply(answers.errorOccurred(error, functions.get.getCurrentFilePath()))
+                                    }
+                                )
+                            }).catch(
+                            async (error) => {
+                                await interaction.reply(answers.errorOccurred(error, functions.get.getCurrentFilePath()))
+                            })
+                    } else {
+                        await functions.create.sendMessageToChannel(
+                            channel,
+                            message,
+                        ).then(
+                            async (sentMessage) => {
+                                answers.messageSentInChannel(
+                                    channel,
+                                    sentMessage
+                                ).then(
+                                    async (answer) => {
+                                        await interaction.reply(answer)
+                                    }
+                                ).catch(
+                                    async (error) => {
+                                        await interaction.reply(answers.errorOccurred(error, functions.get.getCurrentFilePath()))
+                                    }
+                                )
+                            }
+                        ).catch(
+                            async (error) => {
+                                await interaction.reply(answers.errorOccurred(error, functions.get.getCurrentFilePath()))
+                            }
+                        )
+                    }
+
                 } else {
                     answers.alert("Channel is undefined.").then(
                         async (answer) => {
@@ -46,7 +69,7 @@ const execute = async (interaction) => {
                         }
                     ).catch(
                         async (error) => {
-                            await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
+                            await interaction.reply(answers.errorOccurred(error, functions.get.getCurrentFilePath()))
                         }
                     )
                 }
@@ -55,7 +78,7 @@ const execute = async (interaction) => {
             case 'dm':
                 if (user) {
                     if (!user.bot) {
-                        await functions.sendMessageToUser(
+                        await functions.create.sendMessageToUser(
                             user,
                             message,
                         ).then(
@@ -69,13 +92,13 @@ const execute = async (interaction) => {
                                     }
                                 ).catch(
                                     async (error) => {
-                                        await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
+                                        await interaction.reply(answers.errorOccurred(error, functions.get.getCurrentFilePath()))
                                     }
                                 )
                             }
                         ).catch(
                             async (error) => {
-                                await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
+                                await interaction.reply(answers.errorOccurred(error, functions.get.getCurrentFilePath()))
                             }
                         )
                     } else {
@@ -85,7 +108,7 @@ const execute = async (interaction) => {
                             }
                         ).catch(
                             async (error) => {
-                                await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
+                                await interaction.reply(answers.errorOccurred(error, functions.get.getCurrentFilePath()))
                             }
                         )
                     }
@@ -96,20 +119,20 @@ const execute = async (interaction) => {
                         }
                     ).catch(
                         async (error) => {
-                            await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
+                            await interaction.reply(answers.errorOccurred(error, functions.get.getCurrentFilePath()))
                         }
                     )
                 }
         }
 
     } catch (error) {
-        answers.errorOccurred(error, functions.getCurrentFilePath()).then(
+        answers.errorOccurred(error, functions.get.getCurrentFilePath()).then(
             async (answer) => {
                 await interaction.reply(answer)
             }
         ).catch(
             async (error) => {
-                await interaction.reply(answers.errorOccurred(error, functions.getCurrentFilePath()))
+                await interaction.reply(answers.errorOccurred(error, functions.get.getCurrentFilePath()))
             }
         )
     }

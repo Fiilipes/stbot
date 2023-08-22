@@ -2,7 +2,7 @@ import functions from "../../settings/functions.js";
 
 const execute = async (interaction) => {
 
-    functions.createRole("test", interaction).then(
+    functions.create.createRole("test", interaction.guild).then(
         role => {
             console.log(role);
             console.log(role.id);

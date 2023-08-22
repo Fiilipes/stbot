@@ -49,23 +49,23 @@ process.on("uncaughtExceptionMonitor",  (err, origin) => {
 
 
 // somebody joined the server
-client.on(Events.GuildMemberAdd, member => functions.memberJoinListener(member));
+client.on(Events.GuildMemberAdd, member => functions.listener.memberJoinListener(member));
 // somebody left the server
-client.on(Events.GuildMemberRemove, member => functions.memberLeaveListener(member));
+client.on(Events.GuildMemberRemove, member => functions.listener.memberLeaveListener(member));
 
 client.on(Events.InteractionCreate, (interaction) => functions.mainInteractionListener(interaction));
 
 // somebody creates a message
-client.on(Events.MessageCreate, message => functions.messageCreateListener(message));
+client.on(Events.MessageCreate, message => functions.listener.messageCreateListener(message));
 
 setInterval(
     () => {
-        functions.updateUsers();
+        functions.user.updateUsers();
     }, 6000
 )
 
-onSnapshot(doc(db, "ssbot", "soutěže"), (doc) => setTimeout(() => functions.competitionListener(doc), 1000));
-onSnapshot(doc(db, "ssbot", "informations"), (doc) => setTimeout(() => functions.informationListener(doc), 1000));
+onSnapshot(doc(db, "ssbot", "soutěže"), (doc) => setTimeout(() => functions.listener.competitionListener(doc), 1000));
+onSnapshot(doc(db, "ssbot", "informations"), (doc) => setTimeout(() => functions.listener.informationListener(doc), 1000));
 
 
 new REST({version: '10'}).setToken(token).put(

@@ -1,13 +1,18 @@
 import {
     ActionRowBuilder,
-    ButtonBuilder,
+    ButtonBuilder, ChannelType, Colors,
     EmbedBuilder,
-    ModalBuilder, RoleSelectMenuBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder,
+    ModalBuilder, PermissionFlagsBits, RoleSelectMenuBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder,
     TextInputBuilder,
     TextInputStyle, UserSelectMenuBuilder
 } from "discord.js";
-
-export default class MessageComponents {
+import client from "../discordjssetup.js";
+import db, {getSS} from "../firebase.js";
+import {doc, setDoc} from "firebase/firestore";
+import dotenv from 'dotenv';
+dotenv.config();
+const guildId = process.env.GUILD_ID;
+export default class CreateFunctions {
     async createEmbeds(components) {
         const exampleEmbed = new EmbedBuilder()
             .setColor(components.color ? components.color : 0x0099FF)
@@ -56,9 +61,17 @@ export default class MessageComponents {
         let buttons = []
         components.forEach(component => {
             const button = new ButtonBuilder()
-                .setCustomId(component.customId ? component.customId : "error")
                 .setLabel(component.label ? component.label : "Error label")
                 .setStyle(component.style)
+
+            if (component.url) {
+                button.setURL(component.url)
+            } else {
+                button.setCustomId(component.customId ? component.customId : "error")
+                if (component.emoji) {
+                    button.setEmoji(component.emoji)
+                }
+            }
 
             buttons.push(button)
 
@@ -137,4 +150,85 @@ export default class MessageComponents {
 
         return myActionRows
     }
+
+    async createCategory(name, permissions, position) {
+        return await client.guilds.cache.get(guildId)?.channels.create({
+            name: name,
+            type: ChannelType.GuildCategory,
+            permissionOverwrites: permissions,
+            position: position
+        }).then(
+            category => {
+                return category;
+            }
+        );
+    }
+
+    async createChannel(name, type, parent, permissions) {
+        return await client.guilds.cache.get(guildId)?.channels.create({
+            name: name,
+            type: type,
+            parent: parent,
+            permissionOverwrites: permissions
+        }).then(
+            channel => {
+                return channel;
+            }
+        );
+    }
+
+    async createRole(name, guild) {
+        return await guild.roles.create({
+            name: name,
+            color: Colors.Blue,
+            reason: `Role byla vytvořena pro účastníky soutěže ${name}.`,
+        }).then(
+            role => {
+                return role;
+            }
+        )
+    }
+
+    async sendMessageToChannel(channel, message = null, embeds = null, components = null, files = null) {
+        return await client.guilds.cache.get(guildId)?.channels.cache.get(channel.id)?.send({
+            content: message,
+            embeds,
+            components,
+            files
+        }).then(
+            msg => {
+                return msg;
+            }
+        );
+    }
+
+    async sendMessageToUser(user, message = null, embeds = null, components = null, files = null) {
+        return await client.users.cache.get(user.id)?.send({
+            content: message,
+            embeds,
+            components,
+            files
+        }).then(
+            msg => {
+                return msg;
+            }
+        );
+    }
+
+    addInformation({author, messageId, time, type, value}) {
+        getSS(["informations"]).then(
+            res => {
+                const informations = res["informations"].list
+                informations.push({
+                    author: author,
+                    type: type,
+                    time: time,
+                    messageId: messageId,
+                    value: value
+                })
+                setDoc(doc(db, "ssbot", "informations"), {list: informations})
+            }
+        )
+    }
+
 }

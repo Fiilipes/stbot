@@ -2,16 +2,14 @@ import links from "./links.js";
 import images from "./images.js";
 import client from "./discordjssetup.js";
 import websites from "./websites.js";
-import {Colors, hyperlink} from "discord.js";
+import {ButtonStyle, Colors, hyperlink} from "discord.js";
 import functions from "./functions.js";
 
 const errorAnswers = {
     "errorOccurred": async (error, place) => {
-        console.log(place)
-        // max 50 characters
-        console.log(error)
+
         return {
-            "embeds": await functions.createEmbeds(
+            "embeds": await functions.create.createEmbeds(
                 {
                     color: 0xE0C606,
                     title: 'Nastala chyba',
@@ -41,7 +39,7 @@ const answers = {
     "alert": async (error) => {
         try {
             return {
-                "embeds": await functions.createEmbeds(
+                "embeds": await functions.create.createEmbeds(
                     {
                         color: 0x0099FF,
                         title: 'Upozornění',
@@ -57,7 +55,7 @@ const answers = {
                 "ephemeral": true
             }
         } catch (error) {
-            return errorAnswers.errorOccurred(error, functions.getCurrentFilePath())
+            return errorAnswers.errorOccurred(error, functions.get.getCurrentFilePath())
         }
     },
     "notPermitted": {
@@ -67,7 +65,7 @@ const answers = {
     "messageSentInChannel": async (channel, message) => {
         try {
             return {
-                "embeds": await functions.createEmbeds(
+                "embeds": await functions.create.createEmbeds(
                     {
                         color: 0x0099FF,
                         title: 'Zpráva byla odeslána',
@@ -90,13 +88,13 @@ const answers = {
                 "ephemeral": true
             }
         } catch (error) {
-            return errorAnswers.errorOccurred(error, functions.getCurrentFilePath())
+            return errorAnswers.errorOccurred(error, functions.get.getCurrentFilePath())
         }
     },
     "messageSentToUser": async  (user, message) => {
         try {
             return {
-                "embeds": await functions.createEmbeds(
+                "embeds": await functions.create.createEmbeds(
                     {
                         color: 0x0099FF,
                         title: 'Zpráva byla odeslána',
@@ -119,7 +117,137 @@ const answers = {
                 "ephemeral": true
             }
         } catch (error) {
-            return errorAnswers.errorOccurred(error, functions.getCurrentFilePath())
+            return errorAnswers.errorOccurred(error, functions.get.getCurrentFilePath())
+        }
+    },
+    "help": async () => {
+        try {
+            return {
+                "embeds": await functions.create.createEmbeds(
+                    {
+                        color: Colors.Green,
+                        title: 'Help',
+                        description: `Získejte pomoc na našem serveru. Níže si vyberte jednu z možností pomoci.`,
+                        fields: [
+                            {
+                                name: ' ',
+                                value: " ",
+                            },
+                            {
+                                name: ' ',
+                                value: " ",
+                            },
+                            {
+                                name: '✦  Chat',
+                                value: "Mluvte s našim AI botem, který Vás provede naším serverem a odpoví na Vaše otázky.",
+                            },
+                            {
+                                name: ' ',
+                                value: " ",
+                            },
+
+                            {
+                                name: '✦  F&Q',
+                                value: "Často kladené otázky a odpovědi na ně.",
+                            },
+                            {
+                                name: ' ',
+                                value: " ",
+                            },
+
+                            {
+                                name: '✦  Příkazy',
+                                value: "Seznam discord bot příkazů, které můžete použít.",
+                            },
+                            {
+                                name: ' ',
+                                value: " ",
+                            },
+
+                            {
+                                name: '✦  Web',
+                                value: "Odkaz na náš web, kde najdete všechny informace o našem serveru.",
+                            }
+                        ],
+                        thumbnail: images.help,
+                        timestamp: new Date(),
+                        footer: {
+                            text: client.user.username,
+                            iconURL: client.user.avatarURL(),
+                        }
+                    }
+                ),
+                components: [
+                    await functions.create.createButtons([
+                        {
+                            "customId": "chat",
+                            "label": "Chat",
+                            "style": ButtonStyle.Success,
+                            "emoji": "✳️"
+                        },
+                        {
+                            "customId": "faq",
+                            "label": "F&Q",
+                            "style": ButtonStyle.Primary
+                        },
+                        {
+                            "customId": "commands",
+                            "label": "Příkazy",
+                            "style": ButtonStyle.Primary
+                        },
+                        {
+                            "customId": "web",
+                            "label": "Web",
+                            "url": "https://survivalserver.vercel.app/#introduction",
+                            "style": ButtonStyle.Link
+                        }
+                    ])
+                ],
+                "ephemeral": true
+            }
+        } catch (error) {
+            return errorAnswers.errorOccurred(error, functions.get.getCurrentFilePath())
+        }
+    },
+    "newInformation": async (message) => {
+        try {
+            return {
+                "embeds": await functions.create.createEmbeds(
+                    {
+                        color: Colors.White,
+                        title: 'Nová zpráva v informacích',
+                        description: `Nová zpráva byla přidána do informací. Níže si můžete zobrazit její obsah a zvolit zda ji chcete publikovat na web.`,
+                        fields: [
+                            {
+                                name: ' ',
+                                value: " ",
+                            },
+                            {
+                                name: 'Obsah zprávy:',
+                                value: message.content,
+                            }
+                        ],
+                        thumbnail: images.information,
+                        timestamp: new Date(),
+                        footer: {
+                            text: client.user.username,
+                            iconURL: client.user.avatarURL(),
+                        }
+                    }
+                ),
+                components: [
+                    await functions.create.createButtons([
+                        {
+                            "customId": "add_information",
+                            "label": "Přidat na web",
+                            "style": ButtonStyle.Primary,
+                            "emoji": "⭐"
+                        },
+                    ])
+                ],
+            }
+        } catch (error) {
+            return errorAnswers.errorOccurred(error, functions.get.getCurrentFilePath())
         }
     },
     "welcomeMessage": async (member) => {
