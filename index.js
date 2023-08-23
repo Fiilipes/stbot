@@ -30,6 +30,11 @@ import users from "./assets/slashCommands/SC__Users/setup.js";
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
     client.user.setPresence({ activities: [{ name: 'Test mode' }], status: 'online' });
+    setInterval(
+        () => {
+            functions.user.updateUsers();
+        }, 15000
+    )
 });
 
 client.login(token);
@@ -58,11 +63,7 @@ client.on(Events.InteractionCreate, (interaction) => functions.mainInteractionLi
 // somebody creates a message
 client.on(Events.MessageCreate, message => functions.listener.messageCreateListener(message));
 
-setInterval(
-    () => {
-        functions.user.updateUsers();
-    }, 6000
-)
+
 
 onSnapshot(doc(db, "ssbot", "soutěže"), (doc) => setTimeout(() => functions.listener.competitionListener(doc), 1000));
 onSnapshot(doc(db, "ssbot", "informations"), (doc) => setTimeout(() => functions.listener.informationListener(doc), 1000));
