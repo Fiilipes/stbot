@@ -165,7 +165,7 @@ export default class UserFunctions {
 
             getSS(["users"]).then(
                 res => {
-                    const users = res["users"].users
+                    const users = res["users"]
                     const user = users.list.find(user => user.discordID === targetUser.id)
                     const userIndex = users.list.indexOf(user)
 
@@ -173,7 +173,7 @@ export default class UserFunctions {
                     user.servers.find(server => server.name === servers.soutezeTryhard.name).verified = true
                     users.list[userIndex] = user
 
-                    setDoc(doc(db, "ssbot", "users"), {users: users})
+                    setDoc(doc(db, "ssbot", "users"), users)
 
                     functions.create.createEmbeds(templates.embeds.atextVerification.verified(user)).then(
                         embeds => {
@@ -210,12 +210,16 @@ export default class UserFunctions {
     updateUsers() {
         getSS(["users"]).then(
             res => {
-                let users = res["users"].users
+
+                console.log("UPDATING USERS ---------------------------------------------------------------------------------------")
+
+                console.log(res)
+                let users = res["users"]
                 let changed = false
 
                 users.list.forEach(
                     (user, index) => {
-                        if (!user?.servers?.find((server) => server?.name === "Soutěže Tryhard").verified) return
+                        if (!user?.servers?.find((server) => server?.name === "Soutěže Tryhard")?.verified) return
                         const userOnServer = functions.get.getMemberById(user.discordID)
 
                         if (userOnServer) {
@@ -239,7 +243,7 @@ export default class UserFunctions {
                 )
 
                 if (changed) {
-                    setDoc(doc(db, "ssbot", "users"), {users: users})
+                    setDoc(doc(db, "ssbot", "users"), users)
                     console.log("users updated")
                 }
 

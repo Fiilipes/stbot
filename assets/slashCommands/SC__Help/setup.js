@@ -7,6 +7,13 @@ const DESCRIPTION= "List all of my commands or info about a specific command"
 const SLASHCOMMAND = new SlashCommandBuilder()
     .setName(NAME)
     .setDescription(DESCRIPTION)
+    .addStringOption(
+        option => option.setName("query")
+            .setDescription("Input a query")
+            .setRequired(false)
+            .setAutocomplete(true)
+    )
+
 
 const help = {
     name: NAME,

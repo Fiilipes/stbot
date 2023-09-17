@@ -34,6 +34,7 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
 `
 # ${competition.name}
 - Tato kategorie byla vytvořena pro událost **${thread}**
+- Více informací k události můžete také zjistit na webu: ${hyperlink("**našem webu**", websites.survivalServer + "/soutezetryhard/udalosti/" + competition.name.replace(/ /g, ""))}
 
 > ${announcmentChannel} slouží jako zdroj informací a novinek k události
 > ${chatChannel} slouží jako místo pro komunikaci mezi účastníky soutěže
@@ -126,34 +127,43 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
             "atextMessage": (member, reason) => ( {
                 title: "Člen byl zabanován",
                 description: `**${member.username}** byl zabanován z důvodu:\n*${reason}*`,
-                color: Colors.Red,
-                thumbnail: member.displayAvatarURL(),
+                color: Colors.DarkButNotBlack,
+                thumbnail: images.banned,
                 timestamp: new Date(),
-                footer: {
-                    text: client.user.username,
+                author: {
+                    name: client.user.username,
                     iconURL: client.user.avatarURL(),
+                },
+                footer: {
+                    text: "ST Punishment System",
                 }
             }),
             "announcementMessage": (member, reason) => ( {
                 title: "Člen byl zabanován",
                 description: `**${member.username}** byl zabanován z důvodu:\n*${reason}*`,
-                color: Colors.Red,
-                thumbnail: member.displayAvatarURL(),
+                color: Colors.DarkButNotBlack,
+                thumbnail: images.banned,
                 timestamp: new Date(),
-                footer: {
-                    text: client.user.username,
+                author: {
+                    name: client.user.username,
                     iconURL: client.user.avatarURL(),
+                },
+                footer: {
+                    text: "ST Punishment System",
                 }
             }),
             "toUser": (member, reason) => ( {
                 title: "Byl jsi zabanován ze serveru " + bold(servers.soutezeTryhard.name),
                 description: `Byl jsi zabanován z důvodu: ${reason}\n- Pokud si myslíš, že si dostal ban neprávem, obrať se na **A-team**`,
-                color: Colors.Red,
+                color: Colors.DarkButNotBlack,
                 thumbnail: images.banned,
                 timestamp: new Date(),
-                footer: {
-                    text: client.user.username,
+                author: {
+                    name: client.user.username,
                     iconURL: client.user.avatarURL(),
+                },
+                footer: {
+                    text: "ST Punishment System",
                 }
             })
         },

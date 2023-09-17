@@ -1,7 +1,7 @@
 // Import the needed functions from the Firebase SDK
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import {collection, getDocs} from "firebase/firestore";
+import {doc, getFirestore} from "firebase/firestore";
+import {collection, getDoc} from "firebase/firestore";
 
 // env
 import dotenv from 'dotenv';
@@ -27,13 +27,18 @@ const ref__ss  = collection(db, "ssbot");
 
 // Functions to get data from Firebase
 const getSS = async (ids) => {
-    const data = await getDocs(ref__ss);
+
 
     const returnData = {}
 
-    ids.forEach((id) => {
-        returnData[id] = data.docs.map((doc) => ({...doc.data(), id: doc.id} )).find(doc => doc.id === id)
-    })
+    for (let id of ids) {
+        const docRef = doc(db, "ssbot", id);
+
+        await getDoc(docRef).then((doc) => {
+            returnData[id] = doc.data();
+        })
+    }
+
     return returnData;
 }
 

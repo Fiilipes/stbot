@@ -198,7 +198,7 @@ const answers = {
                         {
                             "customId": "web",
                             "label": "Web",
-                            "url": "https://survivalserver.vercel.app/#introduction",
+                            "url": websites.survivalServer+"/#introduction",
                             "style": ButtonStyle.Link
                         }
                     ])

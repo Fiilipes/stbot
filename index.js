@@ -25,6 +25,7 @@ import db from "./assets/settings/firebase.js";
 import {doc, onSnapshot} from "firebase/firestore";
 import userInformations from "./assets/contextMenus/CM__UserInformations/setup.js";
 import users from "./assets/slashCommands/SC__Users/setup.js";
+import competitions from "./assets/slashCommands/SC__Competitions/setup.js";
 
 
 client.once(Events.ClientReady, c => {
@@ -32,6 +33,7 @@ client.once(Events.ClientReady, c => {
     client.user.setPresence({ activities: [{ name: 'Test mode' }], status: 'online' });
     setInterval(
         () => {
+            console.log(".")
             functions.user.updateUsers();
         }, 15000
     )
@@ -40,6 +42,7 @@ client.once(Events.ClientReady, c => {
 client.login(token);
 
 import pkg from "node:process"
+import {channels} from "./assets/settings/channels.js";
 const nodeProcess = pkg.process;
 
 process.on('unhandledRejection', async(reason, promise) => {
@@ -81,7 +84,8 @@ new REST({version: '10'}).setToken(token).put(
                 createCategory.slashCommand,
                 automod.slashCommand,
                 users.slashCommand,
-
+                competitions[0].slashCommand,
+                competitions[1].slashCommand,
                 // Context menus
                 userInformations.contextMenu
 

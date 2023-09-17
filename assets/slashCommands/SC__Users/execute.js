@@ -33,7 +33,7 @@ const execute = async (interaction) => {
         let users
         getSS(["users"]).then(res => {
 
-            users = res["users"].users;
+            users = res["users"];
 
             userInDatabase = users.list.find(userInDatabase => userInDatabase.discordID === user.id);
             indexOfUserInDatabase = users.list.indexOf(userInDatabase);

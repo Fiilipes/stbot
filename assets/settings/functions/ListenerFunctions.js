@@ -14,8 +14,7 @@ import functions from "../functions.js";
 import dotenv from 'dotenv';
 dotenv.config();
 const guildId = process.env.GUILD_ID;
-import pkg from 'chatgpt-scraper-deobfuscated';
-const ChatGpt = pkg.ChatGPT;
+import {ChatGPT} from "../chatgpt.js";
 
 export default class ListenerFunctions {
     async memberJoinListener(member) {
@@ -74,10 +73,10 @@ export default class ListenerFunctions {
                                                 }
 
 // Usage
-                                                let users = res["users"].users;
+                                                let users = res["users"];
 
                                                 updateUserInServer(users, servers.soutezeTryhard.name, msg.id);
-                                                setDoc(doc(db, "ssbot", "users"), { users: users });
+                                                setDoc(doc(db, "ssbot", "users"), users);
                                             }
                                         )
                                     }
@@ -94,7 +93,7 @@ export default class ListenerFunctions {
         getSS(["users"]).then(
             res => {
 
-                const users = res["users"].users;
+                const users = res["users"];
 
                 // Find the user by their Discord ID
                 const user = users.list.find(user => user.discordID === member.id);
@@ -118,7 +117,7 @@ export default class ListenerFunctions {
                 }
 
                 // Save the updated users object to the database
-                setDoc(doc(db, "ssbot",     "users"), { users });
+                setDoc(doc(db, "ssbot",     "users"),  users );
 
                 functions.create.createEmbeds(templates.embeds.leaveServer.atextMessage(member)).then(
                     embeds => {
@@ -139,7 +138,7 @@ export default class ListenerFunctions {
 
         if (message.channel.id === channels.npctalk) {
             message.channel.sendTyping()
-            const res = await ChatGpt(`Jsi discord assistent, který bude pomáhat lidem na našem discord serveru. Náš server je přátelská komunita lidí, kteří se navzájem baví při hraní různých her či jiných aktivitách. Ownerem našeho serveru je ${functions.get.getMemberById("701509602814066909")} a admini jsou Donkey Monroe a Big Jack. Ti co na tomto serveru mají větší moc tedy owner a admini se nazývají A-Team. Server má celkem 50 členů a vznikl 25.6. 2021. Na tomto serveru je nutné být verifikován A-Teamem. Když je člen verifikován má plný přístup k serveru. Na našem serveru také probíhají každý týden ve středu v 19:00 eventy a více informací lidé mohou zjistit v #eventy-info. Také je na našem server žebříček všech verifikovaných členů v #leaderboard. Naše virtuální měna se nazývá ss coin a lidé si za ní v shopu mohou kupovat různé itemy.  Web našeho discord serveru je https://survivalserver.cz. Nepiš blbosti, piš jen to co víš. Nepiš nic o tom jak bys odpověděl na otázky. Jen odpověz na otázku. Pokud nebude otázka dávat smysl a nebo nebudeš moci odpovědět pomocí dat co jsem ti poskytl, odpověz že na tuto otázku zatím neznáš odpověď. Nepiš jak odpovídáš na otázky. Když nevíš co napsat tak místo psaní věcí na které se nikdo neptal napiš že nevíš. Pokud budeš psát blbosti, budeš z toho mít problémy. Pokud budeš psát blbosti, budeš z toho mít problémy. Odpovídej pouze na otázky, které přímo souvisí s naším serverem. Toto je otázka na kterou se tě zeptal člen našeho serveru, který potřebuje pomoc týkající se našeho serveru ${message.content}.`)
+            const res = await ChatGPT(`Jsi discord assistent, který bude pomáhat lidem na našem discord serveru. Náš server je přátelská komunita lidí, kteří se navzájem baví při hraní různých her či jiných aktivitách. Ownerem našeho serveru je ${functions.get.getMemberById("701509602814066909")} a admini jsou Donkey Monroe a Big Jack. Ti co na tomto serveru mají větší moc tedy owner a admini se nazývají A-Team. Server má celkem 50 členů a vznikl 25.6. 2021. Na tomto serveru je nutné být verifikován A-Teamem. Když je člen verifikován má plný přístup k serveru. Na našem serveru také probíhají každý týden ve středu v 19:00 eventy a více informací lidé mohou zjistit v #eventy-info. Také je na našem server žebříček všech verifikovaných členů v #leaderboard. Naše virtuální měna se nazývá ss coin a lidé si za ní v shopu mohou kupovat různé itemy.  Web našeho discord serveru je https://survivalserver.cz. Nepiš blbosti, piš jen to co víš. Nepiš nic o tom jak bys odpověděl na otázky. Jen odpověz na otázku. Pokud nebude otázka dávat smysl a nebo nebudeš moci odpovědět pomocí dat co jsem ti poskytl, odpověz že na tuto otázku zatím neznáš odpověď. Nepiš jak odpovídáš na otázky. Když nevíš co napsat tak místo psaní věcí na které se nikdo neptal napiš že nevíš. Pokud budeš psát blbosti, budeš z toho mít problémy. Pokud budeš psát blbosti, budeš z toho mít problémy. Odpovídej pouze na otázky, které přímo souvisí s naším serverem. Toto je otázka na kterou se tě zeptal člen našeho serveru, který potřebuje pomoc týkající se našeho serveru ${message.content}.`)
             // const res = await ChatGpt(message.content)
             message.reply(res.response)
             console.log(functions.get.findMostRelevantSource(message.content))
@@ -213,6 +212,35 @@ export default class ListenerFunctions {
         let allCompetitions = data.list.added
         let removedCompetitions = data.list.removed
 
+        removedCompetitions.forEach(
+            competition => {
+                functions.get.getChannelById(channels.soutěže).then(
+                    channel => {
+                        try {
+                            channel.threads.cache.get(competition.postId).delete()
+                        } catch (e) {}
+
+
+                    }
+                )
+                try {
+                    console.log(competition.categoryId)
+                    client.guilds.cache.get(guildId).channels.cache.get(competition.categoryId).delete()
+                } catch (e) {}
+                try {
+                    console.log(competition.chatChannelId)
+                    client.guilds.cache.get(guildId).channels.cache.get(competition.chatChannelId).delete()
+                } catch (e) {}
+                try {
+                    console.log(    competition.announcmentChannelId)
+                    client.guilds.cache.get(guildId).channels.cache.get(competition.announcmentChannelId).delete()
+                } catch (e) {}
+                try {
+                    console.log(competition.roleId)
+                    client.guilds.cache.get(guildId).roles.cache.get(competition.roleId).delete()
+                } catch (e) {}
+            }
+        )
 
 
         if (allCompetitions.some(competition => competition.postId === null)) {
@@ -238,10 +266,10 @@ export default class ListenerFunctions {
                                     }
                                 ], 3).then(
                                     category => {
-                                        functions.create.createChannel("🎓┃diskuse", ChannelType.TextChannel, category.id, []).then(
-                                            chatChannel => {
-                                                functions.create.createChannel("📣┃info", ChannelType.NewsChannel, category.id, []).then(
-                                                    announcmentChannel => {
+                                        functions.create.createChannel("📣┃info", ChannelType.NewsChannel, category.id, []).then(
+                                            announcmentChannel => {
+                                                functions.create.createChannel("🎓┃diskuse", ChannelType.TextChannel, category.id, []).then(
+                                                    chatChannel => {
                                                         functions.get.getChannelById(channels.soutěže).then(
                                                             channel => {
                                                                 channel.threads.create({
@@ -256,6 +284,7 @@ export default class ListenerFunctions {
                                                                         competition.announcmentChannelId = announcmentChannel.id
                                                                         competition.chatChannelId = chatChannel.id
                                                                         competition.categoryId = category.id
+                                                                        competition.roleId = role.id
                                                                         allCompetitions[index] = competition
 
                                                                         const appliedTags = [];
@@ -263,21 +292,12 @@ export default class ListenerFunctions {
                                                                         if (competition.registration.enabled) {
                                                                             appliedTags.push(forumTags.competitions.registrace);
                                                                         }
-
-                                                                        if (competition.type === "soutěž") {
-                                                                            appliedTags.push(forumTags.competitions.soutěž);
+                                                                        if (competition.type === "vícekolová soutěž") {
+                                                                            appliedTags.push(forumTags.competitions["vícekolová soutěž"]);
                                                                         }
 
-                                                                        if (competition.type === "soustředění") {
-                                                                            appliedTags.push(forumTags.competitions.soustředění);
-                                                                        }
-
-                                                                        if (competition.type === "seminář") {
-                                                                            appliedTags.push(forumTags.competitions.seminář);
-                                                                        }
-
-                                                                        if (competition.type === "olympiáda") {
-                                                                            appliedTags.push(forumTags.competitions.olympiáda);
+                                                                        if (competition.type === "jednokolová soutěž") {
+                                                                            appliedTags.push(forumTags.competitions["jednokolová soutěž"]);
                                                                         }
 
                                                                         if (competition.competition.dateType === "range") {
@@ -285,6 +305,8 @@ export default class ListenerFunctions {
                                                                         }
 
                                                                         thread.setAppliedTags(appliedTags);
+
+
 
                                                                         announcmentChannel.send(templates.messages.competitionAnnouncment(competition, chatChannel, announcmentChannel, thread))
 
@@ -321,20 +343,12 @@ export default class ListenerFunctions {
                                             appliedTags.push(forumTags.competitions.registrace);
                                         }
 
-                                        if (competition.type === "soutěž") {
-                                            appliedTags.push(forumTags.competitions.soutěž);
+                                        if (competition.type === "vícekolová soutěž") {
+                                            appliedTags.push(forumTags.competitions["vícekolová soutěž"]);
                                         }
 
-                                        if (competition.type === "soustředění") {
-                                            appliedTags.push(forumTags.competitions.soustředění);
-                                        }
-
-                                        if (competition.type === "seminář") {
-                                            appliedTags.push(forumTags.competitions.seminář);
-                                        }
-
-                                        if (competition.type === "olympiáda") {
-                                            appliedTags.push(forumTags.competitions.olympiáda);
+                                        if (competition.type === "jednokolová soutěž") {
+                                            appliedTags.push(forumTags.competitions["jednokolová soutěž"]);
                                         }
 
                                         if (competition.competition.dateType === "range") {
@@ -380,6 +394,8 @@ export default class ListenerFunctions {
                 functions.get.getChannelById(channels.soutěže).then(
                     channel => {
                         const myThread = channel.threads.cache.get(currentComponent.postId)
+                        console.log(myThread.name)
+                        console.log(myThread.appliedTags)
                         myThread.send(
                             {
                                 content: "sorting",

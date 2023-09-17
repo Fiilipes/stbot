@@ -1,11 +1,7 @@
 import {channels} from "./channels.js";
 
 const history = {
-    "allowedChannels": [
-		channels.obecné,
-        channels.support,
-        channels.návrhy,
-    ]
+    "allowedChannels": []
 }
 
 export default history;

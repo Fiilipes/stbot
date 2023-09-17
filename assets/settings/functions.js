@@ -35,6 +35,7 @@ import forumTags from "./forumTags.js";
 import userInformations from "../contextMenus/CM__UserInformations/setup.js";
 import history from "./history.js";
 import users from "../slashCommands/SC__Users/setup.js";
+import competitions from "../slashCommands/SC__Competitions/setup.js";
 
 const guildId = process.env.GUILD_ID;
 
@@ -46,6 +47,9 @@ import DeleteFunctions from "./functions/DeleteFunctions.js";
 import EditFunctions from "./functions/EditFunctions.js";
 import GetFunctions from "./functions/GetFunctions.js";
 import ListenerFunctions from "./functions/ListenerFunctions.js";
+import CompetitionsClass from "./competitions.js";
+
+const competitionsClass = new CompetitionsClass()
 
 class Functions {
 
@@ -85,6 +89,15 @@ class Functions {
                     await users.execute(interaction);
                     break;
                 }
+                case competitions[0].name: {
+                    await competitions[0].execute(interaction, competitionsClass);
+                    break;
+                }
+                case competitions[1].name: {
+                    await competitions[1].execute(interaction, competitionsClass);
+                    break;
+                }
+
                 default: {
                     await interaction.reply({content: "Unknown command", ephemeral: true});
                 }
@@ -152,7 +165,38 @@ class Functions {
             }
         } else if (interaction.isModalSubmit()) {
             const { customId } = interaction;
-            if (customId.startsWith("ban_user_")) {
+            if (customId === "jednokolová_soutěž" || customId === "vícekolová_soutěž") {
+                const name = interaction.fields.getTextInputValue("competition_name")
+                const activeSession = competitionsClass.activeSessions.find(session => session.discordID === interaction.user.id)
+                if (activeSession) {
+                    await activeSession.interaction.deleteReply()
+                    competitionsClass.activeSessions = competitionsClass.activeSessions.filter(session => session.discordID !== interaction.user.id)
+                }
+
+                switch (customId) {
+                    case "jednokolová_soutěž": {
+                        interaction.reply(`# ${name}`)
+
+                        competitionsClass.activeSessions.push({
+                            discordID: interaction.user.id,
+                            interaction: interaction
+                        })
+                        break;
+                    }
+                    case "vícekolová_soutěž": {
+                        interaction.reply(`# ${name}`)
+
+                        competitionsClass.activeSessions.push({
+                            discordID: interaction.user.id,
+                            interaction: interaction
+                        })
+                        break;
+                    }
+                }
+
+
+
+            }  else if (customId.startsWith("ban_user_")) {
 
                 const targetUser = this.get.getMemberById(customId.split("_")[2]).user
                 const reason = interaction.fields.getTextInputValue("ban_user_reason")
@@ -181,6 +225,34 @@ class Functions {
                     }
                 }
             }
+        } else if (interaction.isAutocomplete()) {
+            try {
+                switch (interaction.commandName) {
+                    case "help": {
+                        const value = interaction.options.getFocused().toLowerCase();
+
+                        let choices = ["Minecraft", "STTT"]
+
+
+
+                        const filtered = choices.filter(choice => choice.toLowerCase().includes(value)).slice(0, 25)
+
+                        if (!interaction) return;
+
+                        await interaction.respond(
+                            filtered.map(choice => ({
+                                name: choice,
+                                value: choice,
+                            }))
+                        )
+                        break;
+                    }
+                    default: {
+                        await console.log("Unknown autocomplete command")
+                    }
+                }
+
+            } catch (error) {}
         }
     }
 }
