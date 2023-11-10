@@ -244,18 +244,22 @@ export default class ListenerFunctions {
 
 
         if (allCompetitions.some(competition => competition.postId === null)) {
-            allCompetitions.forEach((competition, index) => {
+            for (const competition of allCompetitions) {
+                // get index of current competition
+                const index = allCompetitions.indexOf(competition);
                 if (competition.postId === null) {
                     // creating discord channels
                     if (competition.createChannel) {
-                        functions.create.createRole(competition.name, client.guilds.cache.get(guildId)).then(
-                            role => {
-                                competition.users.forEach(
-                                    user => {
-                                        functions.user.assignRoleToUser(functions.get.getMemberById(user.discordID), role.id)
+                        await functions.create.createRole(competition.name, client.guilds.cache.get(guildId)).then(
+                            async (role) => {
+                                if (competition.users) {
+                                    for (const user in competition.users?.length > 0) {
+                                        await functions.user.assignRoleToUser(functions.get.getMemberById(user.discordID), role.id)
                                     }
-                                )
-                                functions.create.createCategory(competition.name, [
+                                }
+
+
+                                await functions.create.createCategory(competition.name, [
                                     {
                                         id: client.guilds.cache.get(guildId).roles.everyone.id,
                                         deny: [PermissionFlagsBits.ViewChannel],
@@ -265,14 +269,14 @@ export default class ListenerFunctions {
                                         allow: [PermissionFlagsBits.ViewChannel],
                                     }
                                 ], 3).then(
-                                    category => {
-                                        functions.create.createChannel("📣┃info", ChannelType.NewsChannel, category.id, []).then(
-                                            announcmentChannel => {
-                                                functions.create.createChannel("🎓┃diskuse", ChannelType.TextChannel, category.id, []).then(
-                                                    chatChannel => {
-                                                        functions.get.getChannelById(channels.soutěže).then(
-                                                            channel => {
-                                                                channel.threads.create({
+                                    async (category) => {
+                                        await functions.create.createChannel("📣┃info", ChannelType.NewsChannel, category.id, []).then(
+                                            async (announcmentChannel) => {
+                                                await functions.create.createChannel("🎓┃diskuse", ChannelType.TextChannel, category.id, []).then(
+                                                    async (chatChannel) => {
+                                                        await functions.get.getChannelById(channels.soutěže).then(
+                                                            async (channel) => {
+                                                                await channel.threads.create({
                                                                     name: competition.name,
                                                                     autoArchiveDuration: 1440,
                                                                     reason: "Vytvoření události",
@@ -287,24 +291,24 @@ export default class ListenerFunctions {
                                                                         competition.roleId = role.id
                                                                         allCompetitions[index] = competition
 
-                                                                        const appliedTags = [];
+                                                                        // const appliedTags = [];
+                                                                        //
+                                                                        // if (competition.miles.find((mile) => mile.name === "registration")) {
+                                                                        //     appliedTags.push(forumTags.competitions.registrace);
+                                                                        // }
+                                                                        // if (competition.type === "vícekolová soutěž") {
+                                                                        //     appliedTags.push(forumTags.competitions["vícekolová soutěž"]);
+                                                                        // }
+                                                                        //
+                                                                        // if (competition.type === "jednokolová soutěž") {
+                                                                        //     appliedTags.push(forumTags.competitions["jednokolová soutěž"]);
+                                                                        // }
+                                                                        //
+                                                                        // if (competition.competition.dateType === "range") {
+                                                                        //     appliedTags.push(forumTags.competitions.víceDní);
+                                                                        // }
 
-                                                                        if (competition.registration.enabled) {
-                                                                            appliedTags.push(forumTags.competitions.registrace);
-                                                                        }
-                                                                        if (competition.type === "vícekolová soutěž") {
-                                                                            appliedTags.push(forumTags.competitions["vícekolová soutěž"]);
-                                                                        }
-
-                                                                        if (competition.type === "jednokolová soutěž") {
-                                                                            appliedTags.push(forumTags.competitions["jednokolová soutěž"]);
-                                                                        }
-
-                                                                        if (competition.competition.dateType === "range") {
-                                                                            appliedTags.push(forumTags.competitions.víceDní);
-                                                                        }
-
-                                                                        thread.setAppliedTags(appliedTags);
+                                                                        // thread.setAppliedTags(appliedTags);
 
 
 
@@ -324,38 +328,45 @@ export default class ListenerFunctions {
                             }
                         )
                     } else {
-                        functions.get.getChannelById(channels.soutěže).then(
-                            channel => {
-                                channel.threads.create({
+                        await functions.get.getChannelById(channels.soutěže).then(
+                            async (channel) => {
+                                await channel.threads.create({
                                     name: competition.name,
                                     autoArchiveDuration: 1440,
                                     reason: "Vytvoření události",
                                     message: templates.messages.competitionPost(competition, null, null, null),
                                 }).then(
-                                    thread => {
+                                     (thread) => {
+
+                                        console.log(thread.name)
+                                        console.log(thread.id)
 
                                         competition.postId = thread.id
                                         allCompetitions[index] = competition
 
                                         const appliedTags = [];
 
-                                        if (competition.registration.enabled) {
-                                            appliedTags.push(forumTags.competitions.registrace);
-                                        }
+                                        try {
+                                            if (competition.registration.enabled) {
+                                                appliedTags.push(forumTags.competitions.registrace);
+                                            }
 
-                                        if (competition.type === "vícekolová soutěž") {
-                                            appliedTags.push(forumTags.competitions["vícekolová soutěž"]);
-                                        }
+                                            if (competition.type === "vícekolová soutěž") {
+                                                appliedTags.push(forumTags.competitions["vícekolová soutěž"]);
+                                            }
 
-                                        if (competition.type === "jednokolová soutěž") {
-                                            appliedTags.push(forumTags.competitions["jednokolová soutěž"]);
-                                        }
+                                            if (competition.type === "jednokolová soutěž") {
+                                                appliedTags.push(forumTags.competitions["jednokolová soutěž"]);
+                                            }
 
-                                        if (competition.competition.dateType === "range") {
-                                            appliedTags.push(forumTags.competitions.víceDní);
-                                        }
+                                            if (competition.competition.dateType === "range") {
+                                                appliedTags.push(forumTags.competitions.víceDní);
+                                            }
 
-                                        thread.setAppliedTags(appliedTags);
+                                            thread.setAppliedTags(appliedTags);
+                                        } catch (e) {
+
+                                        }
 
 
                                     }
@@ -366,12 +377,11 @@ export default class ListenerFunctions {
 
 
                 }
-            })
-            setTimeout(
-                () => {
-                    setDoc(doc(db, "ssbot", "soutěže"), {list: {added: allCompetitions, removed: removedCompetitions}})
+            }
 
-                }, 2000 )
+            console.log(allCompetitions)
+            await setDoc(doc(db, "ssbot", "soutěže"), {list: {added: allCompetitions, removed: removedCompetitions}})
+
         }
 
 

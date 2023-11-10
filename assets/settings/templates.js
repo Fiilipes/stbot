@@ -8,21 +8,47 @@ import images from "./images.js";
 
 const templates = {
     "messages": {
-      	"competitionPost": (competition,chatChannel,announcmentChannel, role) =>
-`
+      	"competitionPost": (competition,chatChannel,announcmentChannel, role) => {
+              const miles = competition.miles.sort(
+                  //sort by date.value but if it is single date, sort by date.value.seconds and if it is range, sort by date.value.from.seconds
+                    (a, b) => {
+                        if (a.date.type === "single" && b.date.type === "single") {
+                            return a.date.value.seconds - b.date.value.seconds
+                        } else if (a.date.type === "range" && b.date.type === "range") {
+                            return a.date.value.from.seconds - b.date.value.from.seconds
+                        } else if (a.date.type === "single" && b.date.type === "range") {
+                            return a.date.value.seconds - b.date.value.from.seconds
+                        } else if (a.date.type === "range" && b.date.type === "single") {
+                            return a.date.value.from.seconds - b.date.value.seconds
+                        }
+                    }
+              ).map(mile => {
+                    return (
+                        `
+- **${mile.label}**: ${mile.date.type === "single" ? `**<t:${mile.date.value.seconds}:R>** | **<t:${mile.date.value.seconds}:D>**` : `**<t:${mile.date.value.from.seconds}:R>** | **<t:${mile.date.value.from.seconds}:D>** - **<t:${mile.date.value.to.seconds}:D>**`}
+                        `
+                    )
+                }).join("")
+            console.log(miles)
+              return (
+                  `
 # ${competition.name}
 *${competition.type}*
 
-${competition.registration.enabled ? `- Datum registrace: **<t:${competition.registration.date.seconds}:D>**` : "- Registrace není potřeba"}
-- Datum soutěže: ${competition.competition.dateType === "single" ? `**<t:${competition.competition.date.seconds}:R>** | **<t:${competition.competition.date.seconds}:D>**` : `**<t:${competition.competition.date.from.seconds}:R>** | **<t:${competition.competition.date.from.seconds}:D>** - **<t:${competition.competition.date.to.seconds}:D>**`}
+${competition.miles.length > 0 ? `## Etapy soutěže \n${miles}` : ""}
+
+## Informace k soutěži 
 ${chatChannel && announcmentChannel ? `- Novinky, informace a chat pro soutěž: **${announcmentChannel}** | **${chatChannel}**` : ""}
 ${competition.place ? `- Místo konání: **${competition.place}**` : ""}
-${competition.description ? `- Bližší informace: **${competition.description}**` : ""}
 ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
-    user => ` <@${user.discordID}>`
-)}**${role?` | ${role}`:""}` : "- Nikdo se neúčastní"}
-- Web: **${hyperlink("survivalserver.cz/soutezetryhard/udalosti/" + competition.name.replace(/ /g, ""), websites.survivalServer + "/soutezetryhard/udalosti/" + competition.name.toLowerCase().replace(/ /g, ""))}**
-`,
+                      user => ` <@${user.discordID}>`
+                  )}**${role?` | ${role}`:""}` : "- Nikdo se zatím neúčastní"}
+                  
+${competition.description ?  `## Popis soutěže \n${competition.description}` : ""}
+`
+
+              )
+        },
 
 
         "userInformations": targetUser => `Username: ${targetUser.username}\nID: ${targetUser.id}`,
@@ -34,7 +60,6 @@ ${competition.users.length > 0 ? `- Účastníci: **${competition.users.map(
 `
 # ${competition.name}
 - Tato kategorie byla vytvořena pro událost **${thread}**
-- Více informací k události můžete také zjistit na webu: ${hyperlink("**našem webu**", websites.survivalServer + "/soutezetryhard/udalosti/" + competition.name.replace(/ /g, ""))}
 
 > ${announcmentChannel} slouží jako zdroj informací a novinek k události
 > ${chatChannel} slouží jako místo pro komunikaci mezi účastníky soutěže

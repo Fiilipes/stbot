@@ -1,6 +1,6 @@
 import { channels } from "./channels.js";
 
-const production = false
+const production = true
 
 const forumTags = {
     "competitions": {

@@ -1,4 +1,4 @@
-const production = false;
+const production = true;
 
 const roles = {
     "ateam": production ? "1146381289281298523" : "1130870401237536868",

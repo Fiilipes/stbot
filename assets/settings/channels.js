@@ -1,4 +1,4 @@
-const production = false
+const production = true
 
 const channels = {
     "pravidla": production ? "1146374271929688064" : "1130870152892776558",

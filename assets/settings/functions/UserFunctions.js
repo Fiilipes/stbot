@@ -211,9 +211,6 @@ export default class UserFunctions {
         getSS(["users"]).then(
             res => {
 
-                console.log("UPDATING USERS ---------------------------------------------------------------------------------------")
-
-                console.log(res)
                 let users = res["users"]
                 let changed = false
 
